@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test-vue-direct</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+</head>
+
+<body>
+    <!-- html标签 -->
+    <div id="app-com" :style="{ fontSize: postFontSize + 'em' }">
+        <blog-post :post="postout" @enlarge-text="larger"></blog-post>
+    </div>
+
+
+
+
+    <!-- script逻辑代码 -->
+    <script>
+        /*  定义一个组件----start*/
+        Vue.component('blog-post', {
+                props: ['post'],
+                template: `
+                <div class="blog-post">
+                <h3>{{ post.title }}</h3>
+                <button @click="tellParent">
+                    Enlarge text
+                </button>
+                <div v-html="post.content"></div>
+                </div>
+            `,
+                methods: {
+                    tellParent() {
+                        this.$emit('enlarge-text', '哈哈哈');
+                    }
+                },
+            })
+            // /*  定义一个组件----end*/
+
+        // 使用组件
+        var appCom = new Vue({
+                el: '#app-com',
+                data: {
+                    postFontSize: 1,
+                    postout: {
+                        title: "What is love?",
+                        content: "<p>Eyes are raining for her,heart is holding umbrella for her ,this is love.</p>"
+                    }
+                },
+                methods: {
+                    larger: function(params) {
+                        alert(params)
+                        this.postFontSize += 0.1
+                    }
+                },
+            })
+            //使用组件
+    </script>
+</body>
+
+</html>

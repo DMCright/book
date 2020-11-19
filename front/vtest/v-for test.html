@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app">
+        <input type="button" value="添加菜" @click="add"></input>
+        <input type="button" value="移除菜" @click="remove"></input>
+        <ul>
+            <li v-for="it in arr">
+                城市名:{{it}}
+            </li>
+        </ul>
+        <h2 v-for="it in taste" v-bind:title="it.name">
+            {{it.name}}
+        </h2>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+
+                arr: ["acity", "bcity", "ccity", "dcity"],
+                taste: [{
+                    name: "egg"
+                }, {
+                    name: "jiaozi"
+                }]
+            },
+            methods: {
+                add: function() {
+                    this.taste.push({
+                        name: "rice"
+                    });
+                },
+                remove: function() {
+                    this.taste.pop();
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>

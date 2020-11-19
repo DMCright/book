@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app">
+        <input type="button" value="v on click" v-on:click="dosome">
+        <input type="button" value="v on @click" @click="dosome">
+        <input type="button" value="v on doubleclick" @dblclick="dosome">
+        <h2 @click="changeFood">{{food}}</h2>
+        <hr>
+        <button @click="say('哈哈哈')">带参数点击函数</button>
+        <hr>
+        <span>输入框内点击回车会有响应事件</span>
+        <input type="text" @keyup.enter="keyupFun">
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                food: "",
+                foodname: "food",
+                num: "1"
+            },
+            methods: {
+                dosome: function() {
+                    alert("do something")
+                },
+                changeFood: function() {
+                    console.log(this.food);
+                    this.food = this.foodname + this.num++;
+                },
+                say: function(sentence) {
+                    alert("你说了声:" + sentence);
+                },
+                keyupFun: function() {
+                    alert("点击回车，即将对你进行打击豹腹");
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>

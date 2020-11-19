@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+    <!--和v-show的区别是，v-if为false时会从dom移除元素，
+        v-show只是设置display属性-->
+</head>
+
+<body>
+    <div id="app">
+        <button @click="changeIsShow">是否从dom中移除以下标题</button>
+        <h2 v-if="isShow">标题</h2>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                isShow: true
+            },
+            methods: {
+                changeIsShow: function() {
+                    this.isShow = !this.isShow;
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>

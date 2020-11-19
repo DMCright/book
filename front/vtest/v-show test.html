@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+
+    <style>
+        img {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .imgcontainer {
+            width: 200px;
+            height: 200px;
+            border: solid 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <input type="button" value="切换图片状态" @click="changeisShow">
+        <div class="imgcontainer">
+            <img v-show="isShow" src="../img/logo.png" alt="vue">
+        </div>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data() {
+                return {
+                    isShow: false
+                }
+            },
+            methods: {
+                changeisShow: function() {
+                    this.isShow = !this.isShow;
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>

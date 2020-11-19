@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>v-show指令</title>
+    <!-- v-show指令
+    1.指令作用：根据表达式的真假，控制元素显示或隐藏起来 
+    2.原理是修改元素的display，实现显示隐藏
+    3.指令后面的内容最终都会显示成布尔值，值为true显示，值为false隐藏-->
+</head>
+<body>
+    <div id="app">
+        <input type="button" value="切换状态" @click="changeIsShow">
+        <img v-show="isShow" src="Doge.jpg" alt="Doge">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        var app  = new Vue({
+            el:"#app",
+            data:{
+                isShow:false
+            },
+            methods:{
+                changeIsShow:function(){
+                    this.isShow= !this.isShow;
+                }
+            },
+
+        })
+    </script>
+</body>
+</html>

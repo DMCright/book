@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+    <style>
+        .active {
+            border: solid 2px red;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="app">
+        <img v-bind:src="imgSrc" alt="">
+        <hr>
+        <img :src="imgSrc" :title="imgTitle" :class="{active:isActive}" @click="changeIsActive" alt="">
+        <span>这张图片有点击效果和鼠标悬停信息</span>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                imgSrc: "../img/logo.png",
+                imgTitle: "别停在这张图片上，看你不爽",
+                isActive: false
+            },
+            methods: {
+                changeIsActive: function() {
+                    this.isActive = !this.isActive;
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>
