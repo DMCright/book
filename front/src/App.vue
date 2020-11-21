@@ -88,6 +88,7 @@ export default {
         }).then(() => {
           sessionStorage.removeItem("id")
           sessionStorage.removeItem("username")
+          sessionStorage.removeItem("token")
           this.id = -1
           this.username = ''
           this.onlogin = false
@@ -116,7 +117,7 @@ export default {
           this.$router.push({path:'/login'})
           return
         }
-        this.$router.push({path:'/modify',query:{
+        this.$router.push({path:'/modify/personHistory',query:{
           id:this.id,
           username:this.username,
           navpath:"personHistory"

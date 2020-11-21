@@ -1,12 +1,12 @@
 <template>
     <div id="booksInformation">
-<el-row gutter="20">
+<el-row :gutter="20">
         <el-col :span="6">
-            <img id="logo2" class="grid-content" src="../assets/py.png" alt="logo">
+            <img id="logo2" class="grid-content" src="../assets/images/newlogo.png" alt="logo">
         </el-col>
         <el-col :span="10">
           <div style="padding-top:80px">
-            <el-input v-model="input" placeholder="请输入片名或xp标签"></el-input>
+            <el-input v-model="input" placeholder="请输入书名" @keydown.enter.native="toBooksList"></el-input>
           </div>
         </el-col>
         <el-col :span="2">
@@ -37,7 +37,7 @@
             1
         </el-col>
         <el-col :span="6">
-            <img class="mainBook" src="../assets/py.png" alt="摆渡人">
+            <img class="mainBook" src="../assets/images/摆渡人.jpg" alt="摆渡人">
         </el-col>
         <el-col :span="12">
             <div class="sale_info">
@@ -100,7 +100,12 @@
     export default {
     data: () => ({
       show: true
-    })
+    }),
+    methods:{
+      toBooksList(){
+        this.$router.push({path:'/bookslist'})
+      }
+    }
   }
 </script>
 

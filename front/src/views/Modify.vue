@@ -1,13 +1,13 @@
 <template>
-    <div>
-    <el-container style="height:600px;">
+    <div style="height:100%;">
+    <el-container>
         <el-header></el-header>
         <el-container>
         <el-aside width="25%"> 
             <img class="headimg"  src="../assets/images/mercy.jpg" alt="">
             <el-menu class="el-menu-vertical-demo">
             <el-menu-item index="1" @click="toModify">
-            <i class="el-icon-menu"></i>
+            <i class="el-icon-document"></i>
             <span slot="title">个人信息修改</span>
             </el-menu-item>
             <el-menu-item index="2" @click="toPersonHistory">
@@ -42,7 +42,7 @@ export default {
     },
     mounted() {
         this.user.id = this.$route.query.id
-        this.$http.get('http://10.10.102.162:8001/user/get/'+this.user.id)
+        this.$http.get(this.MYLINK.link+'/user/get/'+this.user.id)
         .then(res=>{
             console.log(res)
             this.user.username = res.data.data.username
@@ -52,12 +52,12 @@ export default {
             this.user.status = res.data.data.status
             this.user.registerDate = res.data.data.registerDate
 
-            if(this.$route.query.navpath == null || this.$route.query.navpath == '' || this.$route.query.navpath ==undefined){
-                this.toModify()
-                return 
-            }
-            let newpath = "/modify/"+this.$route.query.navpath
-            this.toNewPath(newpath)
+            // if(this.$route.query.navpath == null || this.$route.query.navpath == '' || this.$route.query.navpath ==undefined){
+            //     this.toModify()
+            //     return 
+            // }
+            // let newpath = "/modify/"+this.$route.query.navpath
+            // this.toNewPath(newpath)
             }
         )
         

@@ -91,8 +91,9 @@
 <script>
   export default {
     mounted(){
-      this.user = this.$route.query
-      this.loadData()
+      this.loadUserDataBySession()
+      // this.user = this.$route.query
+      this.loadTableData()
     },
     methods: {
       handleClick(row){
@@ -101,8 +102,25 @@
         this.dialogVisible = true
         this.dialogMsg = this.tableData[row]
       },
-      loadData(){
-        this.$http.get('http://10.10.102.162:8001/admin/history/'+this.user.id+
+      loadUserDataBySession(){
+      this.$http.get(this.MYLINK.link+"/user/get/"+sessionStorage.getItem('id'))
+      .then(res=>{
+        if(res !=null){
+          this.user.id = res.data.data.id
+          this.user.username = res.data.data.username
+          this.user.telephone = res.data.data.telephone
+          this.user.email = res.data.data.email
+          this.user.head_image = res.data.data.headImage
+        }else{
+          this.fail('数据获取失败')
+        }
+      }).catch((e)=>{
+        console.log(e)
+        this.fail("无法访问")
+      })
+    },
+      loadTableData(){
+        this.$http.get(this.MYLINK.link+'/admin/history/'+this.user.id+
       '/'+this.pageSize+'/'+this.currentPage)
       .then(res=>{
         console.log(res)
@@ -123,12 +141,12 @@
       handleSizeChange(val) {
         console.log(`每页 ${val} 条`);
         this.pageSize = val
-        this.loadData()
+        this.loadTableData()
       },
       handleCurrentChange(val) {
         console.log(`当前页: ${val}`);
         this.currentPage = val
-        this.loadData()
+        this.loadTableData()
       },
       tableRowClassName({rowIndex}) {
         if (this.tableData[rowIndex].status === 0) {
@@ -147,11 +165,11 @@
         pageSizes:[5,10,20,40],
         pageSize:5,
         user:{
-        id:0,
-        head_image:'',
-        username: '',
-        telephone: '',
-        email: ''
+          id:0,
+          head_image:'',
+          username: '',
+          telephone: '',
+          email: ''
       },
         tableData: []
       }

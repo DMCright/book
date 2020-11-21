@@ -5,6 +5,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 
 import axios from 'axios'
 import qs from 'qs'
+import MYLINK from './data.config.js'
 
 import {
     Pagination,
@@ -169,6 +170,7 @@ Vue.prototype.$confirm = MessageBox.confirm;
 Vue.prototype.$prompt = MessageBox.prompt;
 Vue.prototype.$notify = Notification;
 Vue.prototype.$message = Message;
+Vue.prototype.MYLINK = MYLINK //访问接口地址
 
 Vue.prototype.$qs = qs;
 
@@ -178,8 +180,3 @@ new Vue({
     router,
     render: h => h(App)
 }).$mount('#app')
-
-const originalPush = router.prototype.push
-router.prototype.push = function push(location) {
-    return originalPush.call(this, location).catch(err => err)
-}

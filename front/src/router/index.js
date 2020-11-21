@@ -29,6 +29,7 @@ const routes = [{
     {
         path: '/modify',
         name: 'Modify',
+        redirect: '/modify/msgModify',
         component: () =>
             import ('../views/Modify.vue'),
         children: [{
