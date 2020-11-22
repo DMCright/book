@@ -57,6 +57,12 @@ const routes = [{
         name: 'BooksList',
         component: () =>
             import ('../views/BooksList.vue')
+    },
+    {
+        path: '/findPassword',
+        name: 'FindPassword',
+        component: () =>
+            import ('../views/FindPassword.vue')
     }
 ]
 

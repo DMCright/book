@@ -11,7 +11,7 @@
   active-text-color="#a7d8ec">
   <el-menu-item index="1" @click="toIndex">首页</el-menu-item>
   <el-submenu index="2">
-    <template slot="title">我的品品</template>
+    <template slot="title">个人</template>
     <el-menu-item index="2-1">我的书架</el-menu-item>
     <el-menu-item index="2-2" @click="toModify">个人信息修改</el-menu-item>
     <el-menu-item index="2-3" @click="toModifyHistory">借阅历史</el-menu-item>
@@ -38,9 +38,10 @@
 export default {
   name: 'booksIndex',
   created(){
-    let user = {id:-1,username:''}
+    let user = {id:-1,username:'',token:''}
     user.id = sessionStorage.getItem("id")
     user.username = sessionStorage.getItem("username")
+    user.token = sessionStorage.getItem("token")
     if(sessionStorage.getItem("id") != null){
       this.login(user)
     }
@@ -62,6 +63,12 @@ export default {
       }
     },
     methods: {
+      loadSessionData(){
+        let user = {id:-1,username:'',token:''}
+        user.id = sessionStorage.getItem("id")
+        user.username = sessionStorage.getItem("username")
+        user.token = sessionStorage.getItem("token")
+      },
       success(msg) {
         this.$message({
           message: msg,
@@ -71,16 +78,7 @@ export default {
       fail(msg) {
         this.$message.error(msg);
       },
-      oldoutLogin(){
-        sessionStorage.removeItem("id")
-        sessionStorage.removeItem("username")
-        this.id = -1
-        this.username = ''
-        this.onlogin = false
-        this.$router.push({path:'/'})
-        alert("已退出登录")
-      },
-       outLogin() {
+      outLogin() {
         this.$confirm('是否退出登录？', '退出 ',{
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -99,7 +97,7 @@ export default {
           });
         }).catch(() => {       
           });
-        },
+      },
       toModify(){
         if(this.id<0 || this.username==''){
           this.fail("未登录")

@@ -16,8 +16,9 @@
           <el-form-item label="密码" prop="password">
             <el-input @keyup.enter.native="submit('form')" v-model="form.password" placeholder="请输入密码" show-password clearable></el-input>
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" style="width: 100%;" @click="submit('form')">登录</el-button>
+          <el-form-item style="text-align:right;">
+            <el-button type="primary" style="width: 100%; align-self: flex-end;" @click="submit('form')">登录</el-button>
+            <el-link type="primary" style="left:0px;" @click="toFindPassword">忘记密码?</el-link>
           </el-form-item>
         </el-form>
       </div>
@@ -84,13 +85,20 @@ export default {
         this.$message.error(msg);
       },
     submit(formName) {
+      let judge
       this.$refs[formName].validate((valid)=>{
         if(!valid){
           console.log("input mistake")
+          judge = false
           return false
+        }else{
+          judge = true
         }
+      })
+      console.log(judge)
+      if(!judge){
+        return
       }
-      )
        this.$http.post(this.MYLINK.link+'/user/login',{"username":this.form.username,"password":this.form.password})
        .then(res=>{
           // alert(res.data.message)
@@ -104,7 +112,7 @@ export default {
             this.$emit("listenLogin",
             usermsg)
             this.$router.push({path:'/'})
-            this.success("登录成功")
+            this.success("欢迎使用Piny图书管理系统")
             }else{
               this.fail(res.data.message)
             }
@@ -115,6 +123,9 @@ export default {
          this.fail("无法访问")
          console.log(e)
        })
+    },
+    toFindPassword() {
+      this.$router.push({path:'/findPassword'})
     }
   }
 }

@@ -11,6 +11,10 @@
     <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
   </span>
 </el-dialog>-->
+<el-row>
+  <el-col :span="22"><el-input v-model="input" @keydown.enter.native="search" placeholder="请输入关键字"></el-input></el-col>
+  <el-col :span="2"><el-button icon="el-icon-search" @click="search" circle></el-button></el-col>
+</el-row>
         <el-table
             :data="tableData"
             style="width: 100%"
@@ -96,6 +100,13 @@
       this.loadTableData()
     },
     methods: {
+      search(){
+        if(this.input == '' || this.input==null || this.input==undefined){
+          this.loadTableData()                                                 //输入的关键字为空默认查看所有数据
+        }else{
+          console.log(this.input)
+        }
+      },
       handleClick(row){
         console.log("选中"+row)
         this.selectedRow = row
@@ -157,6 +168,7 @@
     },
     data() {
       return {
+        input:'',
         dialogMsg:[],
         selectedRow:-1,
         dialogVisible:false,

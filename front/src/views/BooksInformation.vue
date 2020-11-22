@@ -6,7 +6,14 @@
         </el-col>
         <el-col :span="10">
           <div style="padding-top:80px">
-            <el-input v-model="input" placeholder="请输入书名" @keydown.enter.native="toBooksList"></el-input>
+            <el-autocomplete popper-class="inputText"
+            :popper-append-to-body="false"
+            v-model="state" placeholder="请输入书名" 
+            :fetch-suggestions="querySearchAsync" 
+            @keydown.enter.native="toBooksList"
+            @select="handleSelect"
+            style="width:100%;">
+            </el-autocomplete>
           </div>
         </el-col>
         <el-col :span="2">
@@ -40,7 +47,7 @@
             <img class="mainBook" src="../assets/images/摆渡人.jpg" alt="摆渡人">
         </el-col>
         <el-col :span="12">
-            <div class="sale_info">
+            <!-- <div class="sale_info">
                 <div class="book_info" style="border-top: silver 2px solid;">
                 <h3>摆渡人（系列畅销千万册。如果命运是一条孤独的河流，谁会是你灵魂的摆渡人？《摆渡人》完结篇即将上市！）</h3>
                 <p>（同名有声剧上线音频平台，由知名演员海铃、谢治勋领衔演绎，带你走进迪伦和崔斯坦的荒原世界！
@@ -78,6 +85,52 @@
                 <el-button type="primary" round>借它就完事了！！</el-button>
                 <el-button type="danger" round disabled>很遗憾，本书已经被借完</el-button>
                 </p>
+            </div> -->
+            <div class="sale_info">
+                <div class="book_info" style="border-top: silver 2px solid;">
+                <h3>{{this.book.bookName}}</h3>
+                <p>（{{this.book.bookDesc}}）</p>
+                </div>
+                <span class="introduce">作者:
+                <a href="#">{{this.book.author}}</a>
+                出品</span>
+                <span class="introduce">出版社:
+                <a href="#">{{this.book.press}}</a>
+                </span>
+                <span class="introduce">
+                出版时间:{{this.book.publishDate}}
+                </span>
+                <p>
+                <span class="introduce">
+                日点击量:{{this.book.dayClickCount}}
+                </span>
+                <span class="introduce">
+                月点击量:{{this.book.mouthClickCount}}
+                </span>
+                <span class="introduce">
+                书本剩余数量：
+                <span pp_name="count">
+                {{this.book.bookCount}}
+                </span>
+                </span>
+                <span class="introduce">
+                书本价格:
+                <span class="introduce" pp_name="price">
+                {{this.book.price}}
+                </span>
+                </span>
+                </p>
+                <p>
+                  <span class="introduce">
+                    书架:{{this.book.bookShelf}}
+                  </span>
+                  <span class="introduce">
+                    层:{{this.book.bookFloor}}
+                  </span>
+                </p>
+                <p>
+                <el-button v-show="isLend" type="danger" round disabled>很遗憾，本书已经被借完</el-button>
+                </p>
             </div>
         </el-col>
         <el-col :span="4" style="text-align:center">
@@ -98,12 +151,90 @@
 
 <script>
     export default {
+      created(){
+        this.state = this.$route.query.bookName
+        this.id = this.$route.query.id
+        this.loadBookData()
+      },
     data: () => ({
-      show: true
+      isLend:false,
+      id:-1,
+      book:{},
+      show: true,
+      state: '',
+      timeout:  null,
+      searchResult:[]
     }),
     methods:{
+      success(msg) {
+        this.$message({
+          message: msg,
+          type: 'success'
+        });
+      },
+      fail(msg) {
+        this.$message.error(msg);
+      },
+      loadBookData(){
+        this.$http.get(this.MYLINK.link+'/book/get?id='+this.id)
+        .then(res=>{
+          // console.log(res)
+          if(res !=null){
+            if(res.data.data != null){
+              this.book = res.data.data
+              this.isLend = this.book.isLend
+              console.log(this.book)
+            }else{
+              this.fail('没有该书')
+            }
+          }else{
+            this.fail('无法访问')
+          }
+        }).catch((e)=>{
+          console.log(e)
+          this.fail('访问异常')
+        })
+      },
       toBooksList(){
-        this.$router.push({path:'/bookslist'})
+        this.$router.push({path:'/bookslist',query:{state:this.state}})
+      },
+      handleSelect(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      handleOpen(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      handleClose(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      dynamicSearch(){
+        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/10/1?bookName='+this.state)//pageSize为10，查找1页即可
+        .then(res=>{
+          console.log(res)
+          this.searchResult = res.data.data.list
+          if(res.data.data != null){
+            for(let i = 0;i < this.searchResult.length;i++){
+              this.searchResult[i].value = this.searchResult[i].bookName //必须要指定一个value值el-autocomplete才可以正常显示
+            }
+          }
+        })
+      },
+      querySearchAsync(queryString, cb){
+        var restaurants = this.searchResult;
+        var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
+        this.dynamicSearch()
+        cb(results);       
+        // clearTimeout(this.timeout);
+        // this.timeout = setTimeout(() => {
+        //   this.dynamicSearch()
+        //   cb(results);
+        // }, 1000 * Math.random());
+      },
+      createStateFilter(queryString) {
+        return (state) => {
+          console.log(state)
+           return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1);//列表内的模糊查询,indexOf找不到匹配会返回-1
+        };
       }
     }
   }

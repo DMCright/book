@@ -88,7 +88,7 @@ export default {
         ],
         email:[
           {required:true, message:"请输入电子邮箱!", trigger:"change"},
-          {max:30, message:'长度不能超过30',trigger:'change'},
+          {min:1, max:30, message:'长度不能超过30',trigger:'change'},
           {validator:checkEmail, trigger:'change'}
         ]
       }
@@ -115,7 +115,7 @@ export default {
             this.form.telephone = res.data.data.telephone
             this.form.email = res.data.data.email
             this.form.head_image = res.data.data.headImage
-            this.copyUser()                                                       //注意，copyUser方法不能在钩子函数里调用
+            this.copyUser()                                                       //注意，copyUser方法不能在钩子函数里调用,只能放在axios内的then才能生效
           }else{
             this.fail(res.data.data.message)
           }
@@ -160,12 +160,15 @@ export default {
       }
     },
     submit(formName) {
-       this.$refs[formName].validate((valid)=>{
+       let judge = this.$refs[formName].validate((valid)=>{
         if(!valid){
           console.log("input mistake")
           return false
         }
       })
+      if(!judge){
+        return
+      }
       this.$confirm('是否修改？', '修改 ',{
           confirmButtonText: '是',
           cancelButtonText: '否',

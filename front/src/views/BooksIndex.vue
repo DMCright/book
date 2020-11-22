@@ -93,34 +93,34 @@
   </el-col>
         <el-col :span="14">
             <div className="rollplay medium">
-            <el-carousel :interval="4000" type="card" arrow="hover">
-            <el-carousel-item v-for="(img,index) in imgList" :key="index">
-      <img v-bind:src="img.url">
-    </el-carousel-item>
-    </el-carousel>
+            <el-carousel :interval="4000" type="card" arrow="hover" style="height:400px;">
+              <el-carousel-item v-for="(img,index) in imgList" :key="index" style="height:400px;">
+                <img  v-bind:src="img.url">
+              </el-carousel-item>
+            </el-carousel>
     </div>
         <ul>
           <li class="book">
             <a href="booksInformation">
-              <img class="books" src="../assets/logo.png" alt="books">
+              <img class="books" src="../assets/images/b1.jpg" alt="books">
               <p>书名1</p>              
             </a>
           </li>
           <li class="book">
             <a href="booksList">
-              <img class="books" src="../assets/logo.png" alt="books">
+              <img class="books" src="../assets/images/b2.jpg" alt="books">
               <p>书名2</p>              
             </a>
           </li>
           <li class="book">
             <a href="#">
-              <img class="books" src="../assets/logo.png" alt="books">
+              <img class="books" src="../assets/images/b3.jpg" alt="books">
               <p>书名3</p>              
             </a>
           </li>
           <li class="book">
             <a href="#">
-              <img class="books" src="../assets/logo.png" alt="books">
+              <img class="books" src="../assets/images/b4.jpg" alt="books">
               <p>类别</p>
               <p>书名4</p>
             </a>
@@ -131,8 +131,9 @@
             <el-card class="box-card" shadow="hover">
               <div class="text item" style="color: black">
                 今日推荐
-                <p><a href="#" class="text item">金</a></p>
-                <p><a href="#" class="text item">东游记</a></p>
+                <p><a href="#" class="text item">《如何有效阅读一本书》</a></p>
+                <p><a href="#" class="text item">《证据法学》</a></p>
+                <p><a href="#" class="text item">《服饰》</a></p>
              </div>
             </el-card>
         </el-col>
@@ -145,7 +146,7 @@
 export default {
   name: 'booksIndex',
   mounted(){
-    this.searchResult = this.loadAll()
+    // this.searchResult = this.loadAll()
   },
   data() {
       return {
@@ -155,10 +156,10 @@ export default {
         activeIndex: '1',
         activeIndex2: '1',
         imgList:[
-        {url:require('../assets/logo.png')},
-        {url:require('../assets/logo.png')},
-        {url:require('../assets/logo.png')},
-        {url:require('../assets/logo.png')}
+        {url:require('../assets/images/b1.jpg')},
+        {url:require('../assets/images/b2.jpg')},
+        {url:require('../assets/images/b3.jpg')},
+        {url:require('../assets/images/b4.jpg')}
       ]
       }
       
@@ -228,22 +229,33 @@ export default {
       handleClose(key, keyPath) {
         console.log(key, keyPath);
       },
+      dynamicSearch(){
+        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/10/1?bookName='+this.state)//pageSize为10，查找1页即可
+        .then(res=>{
+          console.log(res)
+          this.searchResult = res.data.data.list
+          if(res.data.data != null){
+            for(let i = 0;i < this.searchResult.length;i++){
+              this.searchResult[i].value = this.searchResult[i].bookName //必须要指定一个value值el-autocomplete才可以正常显示
+            }
+          }
+        })
+      },
       querySearchAsync(queryString, cb){
         var restaurants = this.searchResult;
         var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        console.log(this.state)
-        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/2/1?bookName='+this.state)
-        .then(res=>{
-          console.log(res)
-        })
-        clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-          cb(results);
-        }, 500 * Math.random());
+        this.dynamicSearch()
+        cb(results);       
+        // clearTimeout(this.timeout);
+        // this.timeout = setTimeout(() => {
+        //   this.dynamicSearch()
+        //   cb(results);
+        // }, 1000 * Math.random());
       },
       createStateFilter(queryString) {
         return (state) => {
-          return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+          console.log(state)
+           return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1);//列表内的模糊查询,indexOf找不到匹配会返回-1
         };
       }
       // handleSelect(item) {

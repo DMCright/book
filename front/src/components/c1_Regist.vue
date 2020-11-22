@@ -117,13 +117,19 @@ export default {
         this.$message.error(msg);
       },
     submit(formName) {
+      let judge
       this.$refs[formName].validate((valid)=>{
         if(!valid){
           console.log("input mistake")
+          judge = false
           return false
+        }else{
+          judge = true
         }
+      })
+      if(!judge){
+        return
       }
-      )
        let temp = this.$qs.stringify(this.form);
        console.log(temp)
       //  this.$http.post('http://10.10.102.162:8001/user/save',temp)
