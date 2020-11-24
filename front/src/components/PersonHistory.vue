@@ -11,10 +11,10 @@
     <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
   </span>
 </el-dialog>-->
-<el-row>
+<!--<el-row>
   <el-col :span="22"><el-input v-model="input" @keydown.enter.native="search" placeholder="请输入关键字"></el-input></el-col>
   <el-col :span="2"><el-button icon="el-icon-search" @click="search" circle></el-button></el-col>
-</el-row>
+</el-row>-->
         <el-table
             :data="tableData"
             style="width: 100%"
@@ -96,8 +96,6 @@
   export default {
     mounted(){
       this.loadUserDataBySession()
-      // this.user = this.$route.query
-      this.loadTableData()
     },
     methods: {
       search(){
@@ -114,14 +112,16 @@
         this.dialogMsg = this.tableData[row]
       },
       loadUserDataBySession(){
-      this.$http.get(this.MYLINK.link+"/user/get/"+sessionStorage.getItem('id'))
+      this.$http.get(this.MYLINK.link8001+"/user/get/"+sessionStorage.getItem('id'))
       .then(res=>{
         if(res !=null){
+          console.log(res)
           this.user.id = res.data.data.id
           this.user.username = res.data.data.username
           this.user.telephone = res.data.data.telephone
           this.user.email = res.data.data.email
           this.user.head_image = res.data.data.headImage
+          this.loadTableData()
         }else{
           this.fail('数据获取失败')
         }
@@ -131,14 +131,14 @@
       })
     },
       loadTableData(){
-        this.$http.get(this.MYLINK.link+'/admin/history/'+this.user.id+
-      '/'+this.pageSize+'/'+this.currentPage)
+        this.$http.get(this.MYLINK.link12001+'/userBook/getByUid'+
+      '/'+this.pageSize+'/'+this.currentPage+'/'+sessionStorage.getItem("id"))
       .then(res=>{
-        console.log(res)
         if(res.data.data == null){
           return
         }
-        this.total = res.data.data.endRow
+        console.log(res)
+        this.total = res.data.data.total
         this.tableData = res.data.data.list
         for(let i = 0;i < this.tableData.length;i++){
           if(this.tableData[i].status ==1){
@@ -150,12 +150,10 @@
       })
       },
       handleSizeChange(val) {
-        console.log(`每页 ${val} 条`);
         this.pageSize = val
         this.loadTableData()
       },
       handleCurrentChange(val) {
-        console.log(`当前页: ${val}`);
         this.currentPage = val
         this.loadTableData()
       },
@@ -174,10 +172,10 @@
         dialogVisible:false,
         currentPage:1,
         total:0,
-        pageSizes:[5,10,20,40],
+        pageSizes:[5,10,20],
         pageSize:5,
         user:{
-          id:0,
+          id:-1,
           head_image:'',
           username: '',
           telephone: '',

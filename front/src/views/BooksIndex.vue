@@ -5,11 +5,12 @@
             <img id="logo" class="grid-content" src="../assets/img/newlogo.png" alt="logo">
         </el-col>
         <el-col :span="10">
-          <div style="padding-top:80px;">
+          <div style="padding-top:30px;">
             <el-autocomplete popper-class="inputText"
             :popper-append-to-body="false"
-            v-model="state" placeholder="请输入书名" 
+            v-model="state" placeholder="请输入书名/作者/检索号/编号查询" 
             :fetch-suggestions="querySearchAsync" 
+            @keyup.native="dynamicSearch"
             @keydown.enter.native="toBooksList"
             @select="handleSelect"
             style="width:100%;">
@@ -17,14 +18,14 @@
           </div>
         </el-col>
         <el-col :span="2">
-          <div style="padding-top:80px">
+          <div style="padding-top:30px">
             <el-button icon="el-icon-search" circle @click="toBooksList"></el-button>
           </div>
         </el-col>
-        <el-col :span="6" style="padding-top:80px">
+        <!--<el-col :span="6" style="padding-top:80px">
           <el-button type="warning" icon="el-icon-shopping-cart-2" circle></el-button>
           <el-button type="warning">我的订单</el-button>
-        </el-col>
+        </el-col>-->
     </el-row>
 
    <el-row>
@@ -41,12 +42,12 @@
 
     <el-row :gutter="20">
         <el-col :span="1">
-          <div class="tool">1</div>
+          <div class="tool"></div>
         </el-col>
         <el-col :span="4">
     <el-menu
       default-active="2"
-      class="el-menu-vertical-demo"
+      class="el-menu-vertical-demo leftmenu"
       @open="handleOpen"
       @close="handleClose"
       background-color="#138fbc"
@@ -55,7 +56,7 @@
       <el-submenu index="1">
         <template slot="title">
           <i class="el-icon-menu"></i>
-          <span>1</span>
+          <span>教育</span>
         </template>
         <el-menu-item-group>
           <template slot="title">1 1</template>
@@ -73,7 +74,7 @@
             <el-submenu index="2">
         <template slot="title">
           <i class="el-icon-menu"></i>
-          <span>2</span>
+          <span>人文</span>
         </template>
         <el-menu-item-group>
           <template slot="title">2 1</template>
@@ -92,23 +93,28 @@
     
   </el-col>
         <el-col :span="14">
-            <div className="rollplay medium">
-            <el-carousel :interval="4000" type="card" arrow="hover" style="height:400px;">
-              <el-carousel-item v-for="(img,index) in imgList" :key="index" style="height:400px;">
+            <div className="rollplay medium" class="rollContainer">
+            <el-carousel :interval="3500" type="card" arrow="hover" style="height:400px;">
+              <el-carousel-item v-for="(img,index) in imgList" :key="index">
                 <img  v-bind:src="img.url">
+              </el-carousel-item>
+              <el-carousel-item v-for="(it,index) in guess" :key="index">
+                <div class="rollBooks" @click="toBooksInformation(it.bookName,it.id)">
+                  <h3 class="rollBooksName">《{{it.bookName}}》</h3>
+                </div>
               </el-carousel-item>
             </el-carousel>
     </div>
         <ul>
-          <li class="book">
+          <!--<li class="book">
             <a href="booksInformation">
-              <img class="books" src="../assets/images/b1.jpg" alt="books">
+              <img class="books" src="../assets/images/v_girl2.jpg" alt="books">
               <p>书名1</p>              
             </a>
           </li>
           <li class="book">
             <a href="booksList">
-              <img class="books" src="../assets/images/b2.jpg" alt="books">
+              <img class="books" src="../assets/images/v_girl.jpg" alt="books">
               <p>书名2</p>              
             </a>
           </li>
@@ -124,16 +130,26 @@
               <p>类别</p>
               <p>书名4</p>
             </a>
+          </li>-->
+          <li class="book" v-for="(it,index) in guess" :key="index">
+            <a :href="'/booksInformation?bookname='+it.bookName+'&id='+it.id">
+              <img class="books" src="../assets/images/b1.jpg" alt="books">
+              <p>《{{it.bookName}}》</p>
+            </a>
           </li>
         </ul>
       </el-col>
-        <el-col :span="4">
+        <el-col :span="5">
             <el-card class="box-card" shadow="hover">
               <div class="text item" style="color: black">
-                今日推荐
-                <p><a href="#" class="text item">《如何有效阅读一本书》</a></p>
+                推荐书籍
+                <!--<p><a href="#" class="text item">《如何有效阅读一本书》</a></p>
                 <p><a href="#" class="text item">《证据法学》</a></p>
-                <p><a href="#" class="text item">《服饰》</a></p>
+                <p><a href="#" class="text item">《服饰》</a></p>-->
+                <p v-for="(it,index) in guess" :key="index">
+                  <a :href="'/booksInformation?bookName='+it.bookName+'&id='+it.id" class="text item">
+                  《{{it.bookName}}》</a>
+                </p>
              </div>
             </el-card>
         </el-col>
@@ -146,17 +162,20 @@
 export default {
   name: 'booksIndex',
   mounted(){
-    // this.searchResult = this.loadAll()
+    this.loadGuess()
   },
   data() {
       return {
+        onlogin:false,
+        guess:[],
+        notices:[],
         state: '',
         timeout:  null,
         searchResult:[],
         activeIndex: '1',
         activeIndex2: '1',
         imgList:[
-        {url:require('../assets/images/b1.jpg')},
+        {url:require('../assets/images/mybook.png')},
         {url:require('../assets/images/b2.jpg')},
         {url:require('../assets/images/b3.jpg')},
         {url:require('../assets/images/b4.jpg')}
@@ -165,61 +184,29 @@ export default {
       
     },
     methods: {
+      toBooksInformation(pname,pid){
+        this.$router.push({path:'/booksInformation',query:{boonName:pname,id:pid}})
+      },
+      loadGuess(){
+        let id = 60
+        if(sessionStorage.getItem("id") != null){ 
+          id = sessionStorage.getItem("id")    
+          this.onlogin = true
+        }else{
+          this.onlogin = false
+        }
+        this.$http.get(this.MYLINK.link9001+'/book/guess/'+id)
+          .then(res=>{
+            if(res!=null){
+              console.log(res)
+              this.guess = res.data.data.list
+            }
+          })
+      },
       toBooksList(){
         this.$router.push({path:'/bookslist',query:{state:this.state}})
       },
-      loadAll() {
-        return [
-          { "value": "三全鲜食（北新泾店）", "address": "长宁区新渔路144号" },
-          { "value": "Hot honey 首尔炸鸡（仙霞路）", "address": "上海市长宁区淞虹路661号" },
-          { "value": "新旺角茶餐厅", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" },
-          { "value": "泷千家(天山西路店)", "address": "天山西路438号" },
-          { "value": "胖仙女纸杯蛋糕（上海凌空店）", "address": "上海市长宁区金钟路968号1幢18号楼一层商铺18-101" },
-          { "value": "贡茶", "address": "上海市长宁区金钟路633号" },
-          { "value": "豪大大香鸡排超级奶爸", "address": "上海市嘉定区曹安公路曹安路1685号" },
-          { "value": "茶芝兰（奶茶，手抓饼）", "address": "上海市普陀区同普路1435号" },
-          { "value": "十二泷町", "address": "上海市北翟路1444弄81号B幢-107" },
-          { "value": "星移浓缩咖啡", "address": "上海市嘉定区新郁路817号" },
-          { "value": "阿姨奶茶/豪大大", "address": "嘉定区曹安路1611号" },
-          { "value": "新麦甜四季甜品炸鸡", "address": "嘉定区曹安公路2383弄55号" },
-          { "value": "Monica摩托主题咖啡店", "address": "嘉定区江桥镇曹安公路2409号1F，2383弄62号1F" },
-          { "value": "浮生若茶（凌空soho店）", "address": "上海长宁区金钟路968号9号楼地下一层" },
-          { "value": "NONO JUICE  鲜榨果汁", "address": "上海市长宁区天山西路119号" },
-          { "value": "CoCo都可(北新泾店）", "address": "上海市长宁区仙霞西路" },
-          { "value": "快乐柠檬（神州智慧店）", "address": "上海市长宁区天山西路567号1层R117号店铺" },
-          { "value": "Merci Paul cafe", "address": "上海市普陀区光复西路丹巴路28弄6号楼819" },
-          { "value": "猫山王（西郊百联店）", "address": "上海市长宁区仙霞西路88号第一层G05-F01-1-306" },
-          { "value": "枪会山", "address": "上海市普陀区棕榈路" },
-          { "value": "纵食", "address": "元丰天山花园(东门) 双流路267号" },
-          { "value": "钱记", "address": "上海市长宁区天山西路" },
-          { "value": "壹杯加", "address": "上海市长宁区通协路" },
-          { "value": "唦哇嘀咖", "address": "上海市长宁区新泾镇金钟路999号2幢（B幢）第01层第1-02A单元" },
-          { "value": "爱茜茜里(西郊百联)", "address": "长宁区仙霞西路88号1305室" },
-          { "value": "爱茜茜里(近铁广场)", "address": "上海市普陀区真北路818号近铁城市广场北区地下二楼N-B2-O2-C商铺" },
-          { "value": "鲜果榨汁（金沙江路和美广店）", "address": "普陀区金沙江路2239号金沙和美广场B1-10-6" },
-          { "value": "开心丽果（缤谷店）", "address": "上海市长宁区威宁路天山路341号" },
-          { "value": "超级鸡车（丰庄路店）", "address": "上海市嘉定区丰庄路240号" },
-          { "value": "妙生活果园（北新泾店）", "address": "长宁区新渔路144号" },
-          { "value": "香宜度麻辣香锅", "address": "长宁区淞虹路148号" },
-          { "value": "凡仔汉堡（老真北路店）", "address": "上海市普陀区老真北路160号" },
-          { "value": "港式小铺", "address": "上海市长宁区金钟路968号15楼15-105室" },
-          { "value": "蜀香源麻辣香锅（剑河路店）", "address": "剑河路443-1" },
-          { "value": "北京饺子馆", "address": "长宁区北新泾街道天山西路490-1号" },
-          { "value": "饭典*新简餐（凌空SOHO店）", "address": "上海市长宁区金钟路968号9号楼地下一层9-83室" },
-          { "value": "焦耳·川式快餐（金钟路店）", "address": "上海市金钟路633号地下一层甲部" },
-          { "value": "动力鸡车", "address": "长宁区仙霞西路299弄3号101B" },
-          { "value": "浏阳蒸菜", "address": "天山西路430号" },
-          { "value": "四海游龙（天山西路店）", "address": "上海市长宁区天山西路" },
-          { "value": "樱花食堂（凌空店）", "address": "上海市长宁区金钟路968号15楼15-105室" },
-          { "value": "壹分米客家传统调制米粉(天山店)", "address": "天山西路428号" },
-          { "value": "福荣祥烧腊（平溪路店）", "address": "上海市长宁区协和路福泉路255弄57-73号" },
-          { "value": "速记黄焖鸡米饭", "address": "上海市长宁区北新泾街道金钟路180号1层01号摊位" },
-          { "value": "红辣椒麻辣烫", "address": "上海市长宁区天山西路492号" },
-          { "value": "(小杨生煎)西郊百联餐厅", "address": "长宁区仙霞西路88号百联2楼" },
-          { "value": "阳阳麻辣烫", "address": "天山西路389号" },
-          { "value": "南拳妈妈龙虾盖浇饭", "address": "普陀区金沙江路1699号鑫乐惠美食广场A13" }
-        ];
-      },
+     
       handleSelect(key, keyPath) {
         console.log(key, keyPath);
       },
@@ -230,7 +217,7 @@ export default {
         console.log(key, keyPath);
       },
       dynamicSearch(){
-        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/10/1?bookName='+this.state)//pageSize为10，查找1页即可
+        this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
           console.log(res)
           this.searchResult = res.data.data.list
@@ -242,22 +229,25 @@ export default {
         })
       },
       querySearchAsync(queryString, cb){
-        var restaurants = this.searchResult;
-        var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        this.dynamicSearch()
-        cb(results);       
-        // clearTimeout(this.timeout);
+        cb(this.searchResult)
+        // var restaurants = this.searchResult;
+        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
+        // cb(results);       
+        // clearTimeout(this.timeout); 
         // this.timeout = setTimeout(() => {
-        //   this.dynamicSearch()
-        //   cb(results);
+        //   cb(this.searchResult)
         // }, 1000 * Math.random());
       },
-      createStateFilter(queryString) {
-        return (state) => {
-          console.log(state)
-           return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1);//列表内的模糊查询,indexOf找不到匹配会返回-1
-        };
-      }
+      // createStateFilter(queryString) {
+      //   return (state) => {
+      //      console.log(state)
+      //      console.log("----------------------------")
+      //      return ((state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) //列表内的模糊查询,indexOf找不到匹配会返回-1
+      //       || (state.author.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+      //       || (state.cardId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+      //       || (state.searchId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1));
+      //   };
+      // },
       // handleSelect(item) {
       //   console.log(item);
       // }
@@ -267,26 +257,46 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+.rollContainer{
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 50px 20px 0px 20px;
+}
+.rollBooksName{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 40%;
+}
+.rollBooks{
+  background-image: url(../assets/images/mybook.png);
+  height: 100%;
+  width: 100%;
+  border-radius: 20px;
+  background-size:cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 img{
   height: 100%;
   width: 100%;
   border-radius: 20px;
+  background-size:cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 #logo{
   margin-left: 10%;
   border-radius: 50px;
-  width: 300px;
+  width: 180px;
   height: 100px;
-}
-.el-row {
-    margin-bottom: 20px;
 }
 .el-col {
     border-radius: 4px;
 }
 .grid-content {
   border-radius: 4px;
-  min-height: 200px;
+  min-height: 100px;
 }
 .advertising{
   border-radius: 4px;
@@ -305,7 +315,9 @@ img{
   }
 
   .box-card {
-    width: 200px;
+    border-radius: 20px;
+    width: 120%;
+    height: 450px;
   }
   
   .loginsign{
@@ -325,5 +337,15 @@ img{
     float: left;
     text-align: center;
     margin-left: 50px;
+  }
+  .el-card{
+    background: rgba(255, 255, 255, 0.4);
+  }
+  .leftmenu{
+    width: 92%;
+    overflow: hidden;
+    border-radius: 20px;
+    height: 450px;
+    margin-left: 8%;
   }
 </style>

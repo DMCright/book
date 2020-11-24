@@ -16,12 +16,33 @@
     <el-menu-item index="2-2" @click="toModify">个人信息修改</el-menu-item>
     <el-menu-item index="2-3" @click="toModifyHistory">借阅历史</el-menu-item>
   </el-submenu>
-  <el-menu-item index="3" disabled>谷恒条野妙妙屋</el-menu-item>
-  <el-menu-item index="4"><a href="https://www.bilibili.com" target="_blank">友商页面</a></el-menu-item>
+  <!-- <el-menu-item><el-button type="success" @click="toNoticeManager" plain >公告管理测试</el-button></el-menu-item> -->
+  <!-- <el-menu-item index="3" disabled>谷恒条野妙妙屋</el-menu-item> -->
+  <!--<el-menu-item index="4"><a href="https://www.bilibili.com" target="_blank">友商页面</a></el-menu-item>-->
+  <!--<el-menu-item><el-button type="success" @click="toLendBook" plain >借书测试</el-button></el-menu-item>-->
+  <el-menu-item index="3" class="notice">
+    <el-dropdown :hide-on-click="false" trigger="click"  @command="handleCommand">
+      <span class="el-dropdown-link" style="color:#fff;">
+        公告<i style="color:#fff;" class="el-icon-arrow-down el-icon--right"></i>
+      </span>
+      <el-dropdown-menu slot="dropdown">
+      <el-dropdown-item :command="readAll" style="color:red; padding-left:0px;padding-right:0px;"><el-button type="primary" style="width:100%;">全读</el-button></el-dropdown-item>
+      <el-dropdown-item disabled>
+      <i class="el-icon-arrow-down el-icon--right"></i>单击读公告
+      </el-dropdown-item>
+        <el-dropdown-item v-for="(it,value) in notices" :key="value" :command="it.message">{{it.message}}</el-dropdown-item>
+        <!--<el-dropdown-item :command="test">黄金糕asdasdasdas</el-dropdown-item>
+        <el-dropdown-item command="b">狮子头</el-dropdown-item>
+        <el-dropdown-item command="c" >螺蛳粉</el-dropdown-item>
+        <el-dropdown-item command="d">蚵仔煎</el-dropdown-item>-->
+      </el-dropdown-menu>
+</el-dropdown>
+  </el-menu-item>
+  <el-menu-item index="4" @click="toTuShiLin" v-if="this.showAdmin">管理员入口</el-menu-item>
   <div class="loginsign">
-    <span v-if="onlogin">
-    <img class="headElephant" src="./assets/py.png" alt="headElephant" @click="toModify"></span>
-    <el-button id="user_tip" v-if="onlogin" @click="toModify" type="text">您好,{{username}}</el-button>
+    <!--<span v-if="onlogin">
+    <img class="headElephant" src="./assets/py.png" alt="headElephant" @click="toModify"></span>-->
+    <el-button id="user_tip" v-if="onlogin" @click="toModify" type="text">{{username}},{{this.managerGreeting}}您好</el-button>
     <el-button id="out_login_tip" v-if="onlogin" type="text" @click="outLogin">退出</el-button>
     <el-button v-if="!onlogin" type="primary" @click="toLogin" plain>登录</el-button>
     <el-button v-if="!onlogin" type="success" @click="toReg" plain >注册</el-button>
@@ -38,20 +59,35 @@
 export default {
   name: 'booksIndex',
   created(){
-    let user = {id:-1,username:'',token:''}
+    this.loadNotice()
+    let user = {id:-1,username:'',token:'',status:-1}
     user.id = sessionStorage.getItem("id")
     user.username = sessionStorage.getItem("username")
     user.token = sessionStorage.getItem("token")
+    user.status = sessionStorage.getItem("status")
     if(sessionStorage.getItem("id") != null){
+      if(user.status == 1){
+        this.managerGreeting = '尊敬的管理员'
+        this.showAdmin = true
+      }
       this.login(user)
     }
   },
   data() {
       return {
+        notices:[],
+        pageSize:10,
+        currentSize:1,
+        total:-1,
+        test:'a',
+        readAll:true,
+        showAdmin:false,
+        managerGreeting:'',
         onlogin:false,
         id:-1,
         username:'',
         input: '',
+        status:-1,
         activeIndex: '1',
         activeIndex2: '1',
         imgList:[
@@ -63,11 +99,29 @@ export default {
       }
     },
     methods: {
+      toLendBook(){
+        this.$router.push({path:'/lendBook'})
+      },
+      toTuShiLin(){
+        window.location.href = 'http://10.10.102.165:8080' 
+      },
+      toNoticeManager(){
+        this.$router.push({path:'/noticeManager'})
+      },
       loadSessionData(){
-        let user = {id:-1,username:'',token:''}
+        let user = {id:-1,username:'',token:'',status:-1}
         user.id = sessionStorage.getItem("id")
         user.username = sessionStorage.getItem("username")
         user.token = sessionStorage.getItem("token")
+        user.status = sessionStorage.getItem("status")
+      },
+      loadNotice(){
+        this.$http.get(this.MYLINK.link2+'/admin/notice/select/'+10+'/'+1)
+        .then(res=>{
+            console.log(res)
+            this.notices = res.data.data.list
+            this.total = res.data.data.total
+        })
       },
       success(msg) {
         this.$message({
@@ -78,6 +132,15 @@ export default {
       fail(msg) {
         this.$message.error(msg);
       },
+      outLoginNow(){
+          sessionStorage.removeItem("id")
+          sessionStorage.removeItem("username")
+          sessionStorage.removeItem("token")
+          sessionStorage.removeItem("status")
+          this.id = -1
+          this.username = ''
+          this.onlogin = false
+      },
       outLogin() {
         this.$confirm('是否退出登录？', '退出 ',{
           confirmButtonText: '确定',
@@ -87,10 +150,14 @@ export default {
           sessionStorage.removeItem("id")
           sessionStorage.removeItem("username")
           sessionStorage.removeItem("token")
+          sessionStorage.removeItem("status")
           this.id = -1
           this.username = ''
           this.onlogin = false
           this.$router.push({path:'/'})
+          this.showAdmin = false
+          this.managerGreeting = ''
+          this.status = 0
           this.$message({
             type: 'success',
             message: '已退出登录'
@@ -99,8 +166,9 @@ export default {
           });
       },
       toModify(){
-        if(this.id<0 || this.username==''){
+        if(sessionStorage.getItem("token") == null){
           this.fail("未登录")
+          this.outLoginNow()
           this.$router.push({path:'/login'})
           return;
         }
@@ -110,8 +178,9 @@ export default {
         }})
       },
       toModifyHistory(){
-        if(this.id<0 || this.username==''){
+        if(sessionStorage.getItem("token") == null){
           this.fail("未登录")
+          this.outLoginNow()
           this.$router.push({path:'/login'})
           return
         }
@@ -133,7 +202,12 @@ export default {
       login(user){
         this.id = user.id
         this.username = user.username
+        this.status = user.status
         this.onlogin = true
+        if(this.status == 1){
+          this.managerGreeting = '尊敬的管理员'
+          this.showAdmin = true
+        }
       },
       handleSelect(key, keyPath) {
         console.log(key, keyPath);
@@ -143,6 +217,23 @@ export default {
       },
       handleClose(key, keyPath) {
         console.log(key, keyPath);
+      },
+      handleCommand(command){           //公告点击
+        if(command == this.readAll){
+            this.$confirm('是否全部已读？', '全读 ',{
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+            }).then(() => {
+            
+            this.$message({
+              type: 'success',
+              message: '已全读'
+            });
+          }).catch(() => {       
+            });
+        }
+        alert(command)
       }
     },
 }
@@ -150,6 +241,26 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+/*.notice-container{
+  z-index:10;
+  width: 0px;
+  height: 0px;
+  border: solid 1px;
+  background-color: #fff;
+  transition: height 1s;
+}
+.notice:hover .notice-container{
+  height: 300px;
+  width: 300px;
+}
+.notice:hover{
+  text-align: center;
+  padding-left: 0px;
+  padding-right: 0px;
+}*/
+body{
+  min-width: 800px;
+}
   #user_tip{
     color: #fff;
   }
@@ -167,7 +278,8 @@ export default {
     background-color: #a7d8ec;
   }
 
-  #booksIndex > img{
+#booksIndex > img{
+  z-index: 1;
   height: 100%;
   width: 100%;
   border-radius: 20px;

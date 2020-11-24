@@ -1,34 +1,27 @@
 <template >
 <div id="frame">
 <el-container style="height:1000px;">
-  <el-aside style="width:450px;">
-      <!-- <img id="left_back" src="../assets/img/v_girl2.jpg" alt="py"> -->
-      <div id="left_back" alt="py"></div>
-  </el-aside>
-  <el-container>
     <el-main>
-      <h2>大头虾找回密码</h2>
+      <h2 style="color:#fff;">找回密码</h2>
       <div class="inframe">
         <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="手机号" prop="telephone">
-            <el-input  v-model="form.telephone" placeholder="请输入手机号" clearable></el-input>
+          <el-form-item label="邮箱" prop="email">
+            <el-input @blur.prevent="check" v-model="form.email" placeholder="请输入邮箱" clearable></el-input>
           </el-form-item>
           <el-row>
             <el-col :span="20">
                 <el-form-item label="验证码" prop="checkCode">
-                    <el-input :disabled="!changeable" v-model="checkCode" placeholder="请输入验证码"></el-input>
+                    <el-input :disabled="!changeable" v-model="form.code" placeholder="请输入验证码"></el-input>
                 </el-form-item>
             </el-col>
-            <el-col :span="4"><el-button plain style="position:absolute; right:0px;" v-text="this.buttonTip" @click="getCheckCode" :disabled="!clickable"></el-button></el-col>
+            <el-col :span="4"><el-button plain style="position:absolute; right:0px;" v-text="this.buttonTip" 
+            @click="delay()" :disabled="!clickable"></el-button></el-col>
           </el-row>
             <el-form-item label="新密码" prop="password">
             <el-input :disabled="!changeable" v-model="form.password" placeholder="请输入新密码" show-password></el-input>
           </el-form-item>
-            <el-form-item label="确认密码" prop="passwordConfirm">
-                <el-input :disabled="!changeable" v-model="form.passwordConfirm" placeholder="请再次确认新密码" show-password></el-input>
+            <el-form-item label="确认密码" prop="confirm">
+                <el-input :disabled="!changeable" v-model="confirm" placeholder="请再次确认新密码" show-password></el-input>
             </el-form-item>
           <el-form-item style="text-align:right;">
             <el-button type="primary" style="width: 100%; align-self: flex-end;" @click="submit('form')">确认使用新密码</el-button>
@@ -39,7 +32,6 @@
     <el-footer>
       <span>v 1.0</span>
     </el-footer>
-  </el-container>
 </el-container>
 </div>
 </template>
@@ -55,54 +47,59 @@ export default {
         callback()
       }
     }
-    var checkPasswordConfirm = (rule, value, callback) =>{
-      if(this.form.password !=this.form.passwordConfirm){
-        callback(new Error('两次输入的密码不一样!'))
+    var checkConfirm = (rule, value, callback) =>{
+      if(this.confirm !=''){
+        if(this.form.password !=this.confirm){
+          callback(new Error('两次输入的密码不一样!'))
+        }else{
+          callback()
+        }
+      }else{
+        callback(new Error('请再次输入密码'))
+      }
+    }
+    var checkCode = (rule, value, callback) =>{
+      if(this.form.code == ''){
+        callback(new Error('请再次邮箱获取的验证码!'))
       }else{
         callback()
       }
     }
-    var checkTelephone = (rule, value, callback) =>{
-      var check = /^[0-9]*$/
+    var checkEmail = (rule, value, callback) =>{
+      var check = /^[a-z|A-Z|0-9|_]+@[a-z|A-Z|0-9|_]+\.[a-z|A-Z|0-9|_]+$/
       if(!check.test(value)){
-        callback(new Error('号码必须为11位数字!'))
+        callback(new Error('邮箱地址格式不正确!'))
       }else{
         callback()
       }
     }
     return {
+      confirm:'',
+      emailExist:false,
       rules:{
         checkCode:[
-            {required:true, message:"请输入获取的验证码", trigger:"change"}
-        ],
-        username:[
-          {required:true, message:"请输入用户名", trigger:"change"},
-          {min:1, max:20, message:"用户名不能超过20个字符", trigger:"change"}
+            {validator:checkCode, message:"请输入邮箱获取的验证码!", trigger:"change"},
         ],
         password:[
           {required:true, message:"请输入新密码!", trigger:"change"},
-          {min:3, max:30, message:"密码必须包含大小写和特殊字符，且不超过30个字符!", trigger:"change"},
+          {min:8, max:30, message:"密码必须包含大小写和特殊字符，且不超过30个字符!", trigger:"change"},
           {validator: checkPassword, trigger: 'change' }
         ],
-        passwordConfirm:[
-          {required:true, message:"请再次确认密码!", trigger:"change"},
-          {validator: checkPasswordConfirm, trigger: 'change' }
+        confirm:[
+          {validator: checkConfirm, trigger: 'change' }
         ],
-        telephone:[
-          {required:true, message:"请输入电话号码!", trigger:"change"},
-          {min:11,max:11, message:"号码必须为11位数字!", trigger:'change'},
-          {validator:checkTelephone, trigger:'change'}
-        ],
+        email:[
+          {required:true, message:"请输入邮箱!", trigger:"change"},
+          {max:30, message:'长度不能超过30',trigger:'change'},
+          {validator:checkEmail, trigger:'change'}
+        ]
       },
       form:{
-        username: '',
-        telephone:'',
-        password:'',
-        passwordConfirm:'',
+        email:'',
+        code:'',
+        password:''
       },
       changeable:false,
-      checkCode:'',
-      realCheckCode:'',
       buttonTip:'获取验证码',
       interval:null,
       clickable:true,
@@ -110,6 +107,21 @@ export default {
     }
   },
   methods: {
+    check(){
+      this.$http.get(this.MYLINK.link8001+'/user/getUser?email='+this.form.email)
+      .then(res=>{
+        if(res!=null){
+          if(res.data.code==200){
+          this.emailExist = true
+        }else{
+          this.fail('不存在绑定了该邮箱的用户')
+          this.emailExist = false
+        }
+        }
+      }).catch((e)=>{
+        console.log(e)
+      })
+    },
     checkPassword(rule,value,callback){
       var check = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{3,30}/
       if(!check.test(value)){
@@ -142,14 +154,17 @@ export default {
       if(!judge){
         return
       }
-       this.$http.post(this.MYLINK.link+'/user/login',{"username":this.form.username,"password":this.form.password})
+      if(!this.emailExist){
+        this.fail('不存在绑定了该邮箱的用户')
+      }
+      let format = this.$qs.stringify(this.form)
+       this.$http.put(this.MYLINK.link8001+'/user/changePwd',format)
        .then(res=>{
-          // alert(res.data.message)
           console.log(res)
           if(res !=null){
             if(res.data.data != null && res.data.code ==200){
-
-                this.$router.push({path:'/login'})
+              this.success('密码已经找回，已跳转到登录界面')
+              this.$router.push({path:'/login'})
             }else{
               this.fail(res.data.message)
             }
@@ -162,22 +177,45 @@ export default {
        })
     },
     getCheckCode(){
-        this.changeable = true
-        this.clickable = false
-        clearInterval(this.interval);
-        this.buttonTip = '还剩'+this.count+'秒'
-        this.count--                                   //这样子感观上好点
-        this.interval = setInterval(() => {
-            if(this.count>0){
-                this.buttonTip = '还剩'+this.count+'秒'
-                this.count--
-            }else{
-                this.count = 60;
-                this.buttonTip = '获取验证码';
-                clearInterval(this.interval)
-                this.clickable = true
-            }
-        }, 1000);
+      if(this.form.email == ''){
+        this.fail("邮箱不能为空")
+        return
+      }
+      this.$http.get(this.MYLINK.link8001+'/user/getUser?email='+this.form.email)
+      .then(res=>{
+        if(res!=null){
+          if(res.data.code==200){
+          this.emailExist = true
+          this.changeable = true
+          this.clickable = false
+          clearInterval(this.interval);
+          this.buttonTip = '还剩'+this.count+'秒'
+          this.count--                                   //这样子感观上好点
+          this.interval = setInterval(() => {
+              if(this.count>0){
+                  this.buttonTip = '还剩'+this.count+'秒'
+                  this.count--
+              }else{
+                  this.count = 60;
+                  this.buttonTip = '获取验证码';
+                  clearInterval(this.interval)
+                  this.clickable = true
+              }
+          }, 1000);
+          if(this.emailExist){
+            this.$http.get(this.MYLINK.link14001+'/email/sendCode?email='+this.form.email)
+          }
+        }else{
+          this.fail('不存在绑定了该邮箱的用户')
+          this.emailExist = false
+        }
+        }
+      }).catch((e)=>{
+        console.log(e)
+      })
+    },
+    delay(){
+      this.getCheckCode()
     }
   }
 }

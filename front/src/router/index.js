@@ -63,6 +63,18 @@ const routes = [{
         name: 'FindPassword',
         component: () =>
             import ('../views/FindPassword.vue')
+    },
+    {
+        path: '/noticeManager',
+        name: 'NoticeManager',
+        component: () =>
+            import ('../views/NoticeManager.vue')
+    },
+    {
+        path: '/lendBook',
+        name: 'LendBook',
+        component: () =>
+            import ('../views/lendBook.vue')
     }
 ]
 

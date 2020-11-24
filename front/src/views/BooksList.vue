@@ -1,15 +1,16 @@
 <template>
-    <div id="booksList">
+    <div id="booksList" style="width:99%;">
     <el-row :gutter="20">
         <el-col :span="6">
             <img id="logo2" class="grid-content" src="../assets/images/newlogo.png" alt="logo">
         </el-col>
         <el-col :span="10">
-          <div style="padding-top:80px;">
+          <div style="padding-top:30px;">
             <el-autocomplete popper-class="inputText"
             :popper-append-to-body="false"
-            v-model="state" placeholder="请输入书名" 
+            v-model="state" placeholder="请输入书名/作者/检索号/编号查询" 
             :fetch-suggestions="querySearchAsync" 
+            @keyup.native="dynamicSearch"
             @keydown.enter.native="search"
             @select="handleSelect"
             style="width:100%;">
@@ -17,22 +18,21 @@
           </div>
         </el-col>
         <el-col :span="2">
-          <div style="padding-top:80px;">
+          <div style="padding-top:30px;">
             <el-button icon="el-icon-search" circle @click="search"></el-button>
           </div>
         </el-col>
-        <el-col :span="6" style="padding-left:30px;padding-top:80px;">
+        <!--<el-col :span="6" style="padding-left:30px;padding-top:80px;">
           <el-button type="warning" icon="el-icon-shopping-cart-2" circle></el-button>
           <el-button type="warning">我的订单</el-button>
-        </el-col>
+        </el-col>-->
     </el-row>
 
     <el-row>
         <el-col :span="2" style="color:white">
-            1
+            
         </el-col>
-
-        <el-col :span="20">
+        <el-col :span="20" style="margin-left:10%;">
             <div class="choosen">
 
             <font style="color:white">书籍分类筛选:</font>
@@ -77,8 +77,8 @@
                             <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:130px;">（同名有声剧上线音频平台，由知名演员海铃、谢治勋领衔演绎，带你走进迪伦和崔斯坦的荒原世界！
                                 《青春有你》王喆推荐！令千万读者灵魂震颤的人性救赎之作。如果我真的存在，也是因为你需要我。白马时光）</p>
                             <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:80px;"><a href="#">谷恒条野</a><span>/</span><span>2020/11/18</span><span><a href="#">谷恒条野出版社</a></span></p>
-                    </li>
-                    <li class="list">
+                    </li>-->
+                    <!--<li class="list">
                         <a href="#">
                             <img class="books" src="../assets/images/摆渡人.jpg" alt="摆渡人">
                         </a>
@@ -88,9 +88,8 @@
 
                     </li> -->
                     <li v-for="(it,index) in this.searchResultCopy" :key="index">
-                      <!-- {{it}} -->
-                      <a href="#">
-                            <img class="books" src="../assets/images/摆渡人.jpg" :alt="it.bookName" @click="toBooksInformation(it.bookName)">
+                      <a :href="'/booksInformation?bookName='+it.bookName+'&id='+it.id">
+                            <img class="books" src="../assets/images/摆渡人.jpg" :alt="it.bookName">
                         </a>
                             <a class="infos" :href="'/booksInformation?bookName='+it.bookName+'&id='+it.id"  style="margin-left:21px">{{it.bookName}}({{it.bookDesc}})</a>
                             <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:130px;">书架:{{it.bookShelf}}  层:{{it.bookFloor}}</p>
@@ -100,8 +99,8 @@
             </p>
         </el-col>
 
-        <el-col :span="2" style="color:white">
-            1
+        <el-col :span="10" style="color:white">
+            
         </el-col>
     </el-row>
     </div>
@@ -185,7 +184,7 @@
         this.$message.error(msg);
       },
       loadData(){
-        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/10/1?bookName='+this.state)//pageSize为10，查找1页即可
+        this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
           // console.log(res)
           this.searchResult = res.data.data.list
@@ -205,7 +204,7 @@
         console.log(key, keyPath);
       },
       dynamicSearch(){
-        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/10/1?bookName='+this.state)//pageSize为10，查找1页即可
+        this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
           console.log(res)
           if(res!=null){
@@ -226,21 +225,24 @@
         this.searchResultCopy = this.searchResult
       },
       querySearchAsync(queryString, cb){
-        var restaurants = this.searchResult;
-        var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        this.dynamicSearch()
-        cb(results);
+        cb(this.searchResult)
+        // var restaurants = this.searchResult;
+        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
+        // cb(results);
         // clearTimeout(this.timeout);
         // this.timeout = setTimeout(() => {
         //   this.dynamicSearch()
         //   cb(results);
         // }, 1000 * Math.random());
       },
-      createStateFilter(queryString) {
-        return (state) => {
-          return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1);
-        };
-      },
+      // createStateFilter(queryString) {
+      //   return (state) => {
+      //     return ((state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) //列表内的模糊查询,indexOf找不到匹配会返回-1
+      //       || (state.author.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+      //       || (state.cardId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+      //       || (state.searchId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1));
+      //   };
+      // },
       toBooksInformation(name){
         this.$router.push({path:'/booksInformation',query:{boonName:name}})
       }
@@ -249,10 +251,16 @@
 </script>
 
 <style scoped>
+body{
+  min-width: 800px;
+}
 img{
   height: 100%;
   width: 100%;
   border-radius: 20px;
+  background-size:cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .loginsign{
     padding: 10px;
@@ -266,11 +274,11 @@ img{
 #logo2{
   margin-left: 10%;
   border-radius: 50px;
-  width: 300px;
+  width: 180px;
   height: 100px;
 }
 .el-row {
-    margin-bottom: 20px;
+   /* margin-bottom: 20px;*/
 }
 .el-col {
     border-radius: 4px;
@@ -285,7 +293,7 @@ img{
 }
 .grid-content {
   border-radius: 4px;
-  min-height: 200px;
+  min-height: 100px;
 }
 .text {
     font-size: 14px;

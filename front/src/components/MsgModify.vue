@@ -3,10 +3,10 @@
     <el-form-item label="用户名" prop="username">
     <el-input v-model="form.username" :disabled="!editable"></el-input>
     </el-form-item>
-    <el-form-item label="电话号码" prop="telephone">
+    <el-form-item label="联系方式" prop="telephone">
     <el-input v-model="form.telephone" :disabled="!editable"></el-input>
     </el-form-item>
-    <el-form-item label="电子邮箱" prop="email">
+    <el-form-item label="邮箱" prop="email">
     <el-input v-model="form.email" :disabled="!editable"></el-input>
     </el-form-item>
     <el-form-item>
@@ -44,7 +44,7 @@ export default {
       }
     }
     var checkEmail = (rule, value, callback) =>{
-      var check = /[a-z|A-Z|0-9|_]+@[a-z|A-Z|0-9|_]+.[a-z|A-Z|0-9|_]+/
+      var check = /^[a-z|A-Z|0-9|_]+@[a-z|A-Z|0-9|_]+\.[a-z|A-Z|0-9|_]+$/
       if(!check.test(value)){
         callback(new Error('邮箱地址格式不正确!'))
       }else{
@@ -82,12 +82,12 @@ export default {
           {validator: checkPasswordConfirm, trigger: 'change' }
         ],
         telephone:[
-          {required:true, message:"请输入电话号码!", trigger:"change"},
+          {required:true, message:"请输入联系方式!", trigger:"change"},
           {min:11,max:11, message:"号码必须为11位数字!", trigger:'change'},
           {validator:checkTelephone, trigger:'change'}
         ],
         email:[
-          {required:true, message:"请输入电子邮箱!", trigger:"change"},
+          {required:true, message:"请输入邮箱!", trigger:"change"},
           {min:1, max:30, message:'长度不能超过30',trigger:'change'},
           {validator:checkEmail, trigger:'change'}
         ]
@@ -101,11 +101,12 @@ export default {
     copyUser(){
       this.copy.username = this.form.username
       this.copy.telephone = this.form.telephone
+
       this.copy.email = this.form.email
       this.copy.head_image = this.form.head_image
     },
     loadUserDataBySession(){
-      this.$http.get(this.MYLINK.link+"/user/get/"+sessionStorage.getItem('id'))
+      this.$http.get(this.MYLINK.link8001+"/user/get/"+sessionStorage.getItem('id'))
       .then(res=>{
         console.log(res)
         if(res !=null){
@@ -156,13 +157,22 @@ export default {
       if(this.editable){
         this.editTip="取消"
       }else{
+        this.recover()
         this.editTip="编辑"
       }
     },
     submit(formName) {
-       let judge = this.$refs[formName].validate((valid)=>{
+      if(this.form.username==this.copy.username && 
+      this.form.email==this.copy.email &&
+      this.form.telephone==this.copy.telephone){
+        this.fail("没有改动")
+        return
+      }
+       let judge = true
+       this.$refs[formName].validate((valid)=>{
         if(!valid){
           console.log("input mistake")
+          judge = false
           return false
         }
       })
@@ -175,7 +185,8 @@ export default {
           type: 'warning'
         }).then(() => {
             let temp = this.$qs.stringify(this.form);
-            this.$http.put(this.MYLINK.link+'/user/update',temp)
+            this.$http.put(this.MYLINK.link8001+'/user/rupdate',temp)
+            // this.$http.put(this.MYLINK.link8001+'/user/update',this.form)
             .then(res=>{
             console.log(res)
             if(res.data.data==null ||res.data.data ==undefined){
@@ -187,9 +198,11 @@ export default {
               this.success(res.data.message)
               this.editable = false
               this.copyUser()
+              this.editTip="编辑"
             }
           })
-        }).catch(() => {       
+        }).catch((e) => {  
+          console.log(e)     
           });
 
       //  let temp = this.$qs.stringify(this.form);

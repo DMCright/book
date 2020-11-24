@@ -1,13 +1,12 @@
 <template >
-<div id="frame">
-<el-container style="height:1000px;">
-  <el-aside style="width:450px;">
-      <!-- <img id="left_back" src="../assets/img/v_girl2.jpg" alt="py"> -->
+<div id="frame" style="">
+<el-container style="height:600px;">
+  <!--<el-aside style="width:400px;">
       <div id="left_back" alt="py"></div>
-  </el-aside>
+  </el-aside>-->
   <el-container>
     <el-main>
-      <h2>欢迎登录品品品图书馆</h2>
+      <h2 style="color:#fff;">登录</h2>
       <div class="inframe">
         <el-form ref="form" :model="form" :rules="rules" label-width="80px">
           <el-form-item label="用户名" prop="username">
@@ -50,7 +49,7 @@ export default {
         ],
         password:[
           {required:true, message:"请输入密码", trigger:"change"},
-          {min:3, max:30, message:"密码必须包含大小写和特殊字符，且不超过30个字符", trigger:"change"},
+          {min:8, max:30, message:"密码必须包含大小写和特殊字符，在8到30个字符以内", trigger:"change"},
           {validator: checkPassword, trigger: 'change' }
         ]
       },
@@ -99,16 +98,17 @@ export default {
       if(!judge){
         return
       }
-       this.$http.post(this.MYLINK.link+'/user/login',{"username":this.form.username,"password":this.form.password})
+       this.$http.post(this.MYLINK.link8001+'/user/login',{"username":this.form.username,"password":this.form.password})
        .then(res=>{
           // alert(res.data.message)
           console.log(res)
           if(res !=null){
             if(res.data.data != null && res.data.code ==200){
-            let usermsg = {username:this.form.username,id:res.data.data[0],token:res.data.data[1]}
+            let usermsg = {username:this.form.username,id:res.data.data[0],token:res.data.data[1],status:res.data.data[2]}
             sessionStorage.setItem("id",usermsg.id)
             sessionStorage.setItem("username",usermsg.username)
             sessionStorage.setItem("token",usermsg.token)
+            sessionStorage.setItem('status',usermsg.status)
             this.$emit("listenLogin",
             usermsg)
             this.$router.push({path:'/'})
@@ -132,6 +132,9 @@ export default {
 
 </script>
 <style>
+body{
+  min-width: 1000px;
+}
 #left_back{
   width: 100%;
   height: 100%;
@@ -142,9 +145,12 @@ export default {
 .inframe{
   margin-left: 25%;
   width: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding:30px 20px 20px 0px;
 }
 
-    .el-header, .el-footer {
+  .el-header, .el-footer {
     text-align: center;
     line-height: 60px;
   }
@@ -159,7 +165,9 @@ export default {
   }
   
   .el-container {
-    
+    background-image: url(../assets/images/background1.gif);
+    background-repeat: no-repeat;
+    background-size: cover;
     margin-bottom: 0px;
   }
 

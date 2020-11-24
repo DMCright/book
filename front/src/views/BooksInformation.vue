@@ -1,15 +1,16 @@
 <template>
-    <div id="booksInformation">
+    <div id="booksInformation" style="height:600px; width:99%;">
 <el-row :gutter="20">
         <el-col :span="6">
             <img id="logo2" class="grid-content" src="../assets/images/newlogo.png" alt="logo">
         </el-col>
         <el-col :span="10">
-          <div style="padding-top:80px">
+          <div style="padding-top:30px">
             <el-autocomplete popper-class="inputText"
             :popper-append-to-body="false"
-            v-model="state" placeholder="请输入书名" 
+            v-model="state" placeholder="请输入书名/作者/检索号/编号查询" 
             :fetch-suggestions="querySearchAsync" 
+            @keyup.native="dynamicSearch"
             @keydown.enter.native="toBooksList"
             @select="handleSelect"
             style="width:100%;">
@@ -17,33 +18,33 @@
           </div>
         </el-col>
         <el-col :span="2">
-          <div style="padding-top:80px">
+          <div style="padding-top:30px">
             <el-button icon="el-icon-search" circle></el-button>
           </div>
         </el-col>
-        <el-col :span="6" style="padding-top:80px">
+        <!--<el-col :span="6" style="padding-top:80px">
           <el-button type="warning" icon="el-icon-shopping-cart-2" circle></el-button>
           <el-button type="warning">我的订单</el-button>
-        </el-col>
+        </el-col>-->
     </el-row>
 
     <el-row>
         <el-col :span="2" style="color:#a7d8ec">
-            1
+            
         </el-col>
         <el-col :span="20">
             <div style="border-top:#138fbc 2px solid"></div>
         </el-col>
         <el-col :span="2" style="color:#a7d8ec">
-            1
+            
         </el-col>
     </el-row>
 
     <el-row>
         <el-col :span="2">
-            1
+            
         </el-col>
-        <el-col :span="6">
+        <el-col :span="6" style="margin-left:100px;">
             <img class="mainBook" src="../assets/images/摆渡人.jpg" alt="摆渡人">
         </el-col>
         <el-col :span="12">
@@ -176,7 +177,7 @@
         this.$message.error(msg);
       },
       loadBookData(){
-        this.$http.get(this.MYLINK.link+'/book/get?id='+this.id)
+        this.$http.get(this.MYLINK.link9001+'/book/get/'+this.id)
         .then(res=>{
           // console.log(res)
           if(res !=null){
@@ -208,7 +209,7 @@
         console.log(key, keyPath);
       },
       dynamicSearch(){
-        this.$http.get(this.MYLINK.link+'/book/selectAllByCondition/10/1?bookName='+this.state)//pageSize为10，查找1页即可
+        this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
           console.log(res)
           this.searchResult = res.data.data.list
@@ -220,22 +221,26 @@
         })
       },
       querySearchAsync(queryString, cb){
-        var restaurants = this.searchResult;
-        var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        this.dynamicSearch()
-        cb(results);       
+        // this.dynamicSearch()
+        cb(this.searchResult)
+        // var restaurants = this.searchResult;
+        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
+        // cb(results);       
         // clearTimeout(this.timeout);
         // this.timeout = setTimeout(() => {
         //   this.dynamicSearch()
         //   cb(results);
         // }, 1000 * Math.random());
       },
-      createStateFilter(queryString) {
-        return (state) => {
-          console.log(state)
-           return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1);//列表内的模糊查询,indexOf找不到匹配会返回-1
-        };
-      }
+      // createStateFilter(queryString) {
+      //   return (state) => {
+      //     console.log(state)
+      //      return ((state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) //列表内的模糊查询,indexOf找不到匹配会返回-1
+      //       || (state.author.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+      //       || (state.cardId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
+      //       || (state.searchId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1));
+      //   };
+      // }
     }
   }
 </script>
@@ -245,6 +250,9 @@ img{
   height: 100%;
   width: 100%;
   border-radius: 20px;
+  background-size:cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .loginsign{
     padding: 10px;
@@ -261,7 +269,7 @@ img{
 #logo2{
   margin-left: 10%;
   border-radius: 50px;
-  width: 300px;
+  width: 180px;
   height: 100px;
 }
 .el-row {
@@ -280,7 +288,7 @@ img{
 }
 .grid-content {
   border-radius: 4px;
-  min-height: 200px;
+  min-height: 100px;
 }
 .text {
     font-size: 14px;
