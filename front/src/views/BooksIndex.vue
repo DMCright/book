@@ -56,89 +56,30 @@
       <el-submenu index="1">
         <template slot="title">
           <i class="el-icon-menu"></i>
-          <span>教育</span>
+          <span>书籍类别展开</span>
         </template>
-        <el-menu-item-group>
-          <template slot="title">1 1</template>
-          <el-menu-item index="1-1">1 1 1</el-menu-item>
-          <el-menu-item index="1-2">1 1 2</el-menu-item>
-        </el-menu-item-group>
-        <el-menu-item-group title="1 2">
-          <el-menu-item index="1-3">1 2 1</el-menu-item>
-        </el-menu-item-group>
-        <el-submenu index="1-4">
-          <template slot="title">1 3</template>
-          <el-menu-item index="1-4-1">1 3 1</el-menu-item>
-        </el-submenu>
-      </el-submenu>
-            <el-submenu index="2">
-        <template slot="title">
-          <i class="el-icon-menu"></i>
-          <span>人文</span>
-        </template>
-        <el-menu-item-group>
-          <template slot="title">2 1</template>
-          <el-menu-item index="2-1">2 1 1</el-menu-item>
-          <el-menu-item index="2-2">2 1 2</el-menu-item>
-        </el-menu-item-group>
-        <el-menu-item-group title="2 2">
-          <el-menu-item index="2-3">2 2 1</el-menu-item>
-        </el-menu-item-group>
-        <el-submenu index="2-4">
-          <template slot="title">2 3</template>
-          <el-menu-item index="2-4-1">2 3 1</el-menu-item>
-        </el-submenu>
+          <el-menu-item @click="toBooksListByCategory(it.id)" v-for="(it, index) in allType" :key="index">{{it.categoryName}}</el-menu-item>
       </el-submenu>
     </el-menu>
     
   </el-col>
         <el-col :span="14">
             <div className="rollplay medium" class="rollContainer">
-            <el-carousel :interval="3500" type="card" arrow="hover" style="height:400px;">
-              <el-carousel-item v-for="(img,index) in imgList" :key="index">
-                <img  v-bind:src="img.url">
-              </el-carousel-item>
+              <el-carousel :interval="3500" type="card" arrow="hover" style="height:400px;">
               <el-carousel-item v-for="(it,index) in guess" :key="index">
-                <div class="rollBooks" @click="toBooksInformation(it.bookName,it.id)">
-                  <h3 class="rollBooksName">《{{it.bookName}}》</h3>
-                </div>
+                <img  v-bind:src="it.cover" @click="toBooksInformation(it.bookName,it.id)">
               </el-carousel-item>
-            </el-carousel>
+              </el-carousel>
     </div>
         <ul>
-          <!--<li class="book">
-            <a href="booksInformation">
-              <img class="books" src="../assets/images/v_girl2.jpg" alt="books">
-              <p>书名1</p>              
-            </a>
-          </li>
-          <li class="book">
-            <a href="booksList">
-              <img class="books" src="../assets/images/v_girl.jpg" alt="books">
-              <p>书名2</p>              
-            </a>
-          </li>
-          <li class="book">
-            <a href="#">
-              <img class="books" src="../assets/images/b3.jpg" alt="books">
-              <p>书名3</p>              
-            </a>
-          </li>
-          <li class="book">
-            <a href="#">
-              <img class="books" src="../assets/images/b4.jpg" alt="books">
-              <p>类别</p>
-              <p>书名4</p>
-            </a>
-          </li>-->
-          <li class="book" v-for="(it,index) in guess" :key="index">
+          <li class="book" v-for="(it,index) in guess2" :key="index">
             <a :href="'/booksInformation?bookname='+it.bookName+'&id='+it.id">
-              <img class="books" src="../assets/images/b1.jpg" alt="books">
+              <img class="books" v-bind:src="imgList[index].url" alt="books">
               <p>《{{it.bookName}}》</p>
             </a>
           </li>
         </ul>
-      </el-col>
+        </el-col>
         <el-col :span="5">
             <el-card class="box-card" shadow="hover">
               <div class="text item" style="color: black">
@@ -163,9 +104,14 @@ export default {
   name: 'booksIndex',
   mounted(){
     this.loadGuess()
+    this.loadType()
   },
   data() {
       return {
+        guess2:[{id:31,bookName:'资本论'},{id:38,bookName:'球状闪电'},{id:68,bookName:'水浒传'},{id:69,bookName:'高等数学'}],
+        allType:[{id:4,categoryName:''},{id:6,categoryName:''},{id:8,categoryName:''},
+        {id:9,categoryName:''},{id:4,categoryName:''}],
+        typeData:[],
         onlogin:false,
         guess:[],
         notices:[],
@@ -175,18 +121,49 @@ export default {
         activeIndex: '1',
         activeIndex2: '1',
         imgList:[
-        {url:require('../assets/images/mybook.png')},
-        {url:require('../assets/images/b2.jpg')},
-        {url:require('../assets/images/b3.jpg')},
-        {url:require('../assets/images/b4.jpg')}
+        {url:require('../assets/images/b31.jpg')},
+        {url:require('../assets/images/b38.jpg')},
+        {url:require('../assets/images/b68.jpg')},
+        {url:require('../assets/images/b69.jpg')}
       ]
       }
       
     },
     methods: {
-      toBooksInformation(pname,pid){
-        this.$router.push({path:'/booksInformation',query:{boonName:pname,id:pid}})
+      // 提示
+      success(msg) {
+        this.$message({
+          message: msg,
+          type: 'success'
+        });
       },
+      // 提示
+      fail(msg) {
+        this.$message.error(msg);
+      },
+      // 加载所有书籍类别
+      loadType(){
+        this.$http.get(this.MYLINK.link2+"/admin/category/select/"
+        + 10 + "/" + 1)
+        .then(res=>{
+          if(res != null){
+            console.log(res)
+            this.allType = res.data.data.list
+          }else{
+            this.fail("访问失败")
+          }
+        })
+        
+      },
+      // 前往书籍详情
+      toBooksInformation(pname,pid,cid){
+        if(cid==null){
+          this.$router.push({path:'/booksInformation',query:{boonName:pname,id:pid}})
+        }else{
+          this.$router.push({path:'/booksInformation',query:{boonName:pname,id:pid,categoryId:cid}})
+        }
+      },
+      // 加载推荐书籍列表
       loadGuess(){
         let id = 60
         if(sessionStorage.getItem("id") != null){ 
@@ -203,10 +180,15 @@ export default {
             }
           })
       },
+      // 前往书籍列表展示
       toBooksList(){
         this.$router.push({path:'/bookslist',query:{state:this.state}})
       },
-     
+      // 按照类别筛选前往书籍列表
+      toBooksListByCategory(id){
+        this.$router.push({path:'/bookslist',query:{state:this.state,categoryId:id}})//注意参数变化
+      },
+       
       handleSelect(key, keyPath) {
         console.log(key, keyPath);
       },
@@ -216,6 +198,7 @@ export default {
       handleClose(key, keyPath) {
         console.log(key, keyPath);
       },
+      // 搜索书籍
       dynamicSearch(){
         this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
@@ -228,29 +211,10 @@ export default {
           }
         })
       },
+      // 异步搜索
       querySearchAsync(queryString, cb){
         cb(this.searchResult)
-        // var restaurants = this.searchResult;
-        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        // cb(results);       
-        // clearTimeout(this.timeout); 
-        // this.timeout = setTimeout(() => {
-        //   cb(this.searchResult)
-        // }, 1000 * Math.random());
       },
-      // createStateFilter(queryString) {
-      //   return (state) => {
-      //      console.log(state)
-      //      console.log("----------------------------")
-      //      return ((state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) //列表内的模糊查询,indexOf找不到匹配会返回-1
-      //       || (state.author.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
-      //       || (state.cardId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
-      //       || (state.searchId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1));
-      //   };
-      // },
-      // handleSelect(item) {
-      //   console.log(item);
-      // }
     }
 }
 </script>
@@ -345,7 +309,8 @@ img{
     width: 92%;
     overflow: hidden;
     border-radius: 20px;
-    height: 450px;
+    height: 570px;
+    //height: 100%;
     margin-left: 8%;
   }
 </style>

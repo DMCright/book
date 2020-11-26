@@ -3,7 +3,6 @@
     <el-container>
         <el-container>
             <el-aside> 
-                <!-- <img class="headimg"  src="../assets/images/mercy.jpg" alt=""> -->
                 <el-menu class="el-menu-vertical-demo">
                     <el-menu-item index="1" @click="toModify">
                     <i class="el-icon-document"></i>
@@ -40,6 +39,7 @@ export default {
         }
     },
     mounted() {
+        // 加载用户信息
         this.user.id = this.$route.query.id
         this.$http.get(this.MYLINK.link8001+'/user/get/'+this.user.id)
         .then(res=>{
@@ -50,18 +50,12 @@ export default {
             this.user.head_image = res.data.data.headImage
             this.user.status = res.data.data.status
             this.user.registerDate = res.data.data.registerDate
-
-            // if(this.$route.query.navpath == null || this.$route.query.navpath == '' || this.$route.query.navpath ==undefined){
-            //     this.toModify()
-            //     return 
-            // }
-            // let newpath = "/modify/"+this.$route.query.navpath
-            // this.toNewPath(newpath)
             }
         )
         
     },
     methods:{
+        // 提示
         success(msg) {
         this.$message({
           message: msg,
@@ -71,6 +65,7 @@ export default {
         fail(msg) {
             this.$message.error(msg);
         },
+        // 子路由跳转到修改个人信息页面
         toModify(){
             if(sessionStorage.getItem("token")==null){
                 this.fail('未登录')
@@ -84,6 +79,7 @@ export default {
             telephone:this.user.telephone,
             email:this.user.email}})
         },
+        // 子路由跳转到修改个人借阅历史页面
         toPersonHistory(){
             if(sessionStorage.getItem("token")==null){
                 this.fail('未登录')
@@ -97,6 +93,7 @@ export default {
             telephone:this.user.telephone,
             email:this.user.email}})
         },
+        //自定义跳转路由路径,通过newpath来决定路径
         toNewPath(newpath){
             if(sessionStorage.getItem("token")==null){
                 this.fail('未登录')

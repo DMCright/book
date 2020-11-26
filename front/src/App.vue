@@ -2,6 +2,7 @@
 <div id="booksIndex">
   <div class="line"></div>
   <el-menu
+  style="border:none;"
   :default-active="activeIndex2"
   class="el-menu-demo"
   mode="horizontal"
@@ -12,7 +13,7 @@
   <el-menu-item index="1" @click="toIndex">首页</el-menu-item>
   <el-submenu index="2">
     <template slot="title">个人</template>
-    <el-menu-item index="2-1">我的书架</el-menu-item>
+    <!--<el-menu-item index="2-1">我的书架</el-menu-item>-->
     <el-menu-item index="2-2" @click="toModify">个人信息修改</el-menu-item>
     <el-menu-item index="2-3" @click="toModifyHistory">借阅历史</el-menu-item>
   </el-submenu>
@@ -20,23 +21,25 @@
   <!-- <el-menu-item index="3" disabled>谷恒条野妙妙屋</el-menu-item> -->
   <!--<el-menu-item index="4"><a href="https://www.bilibili.com" target="_blank">友商页面</a></el-menu-item>-->
   <!--<el-menu-item><el-button type="success" @click="toLendBook" plain >借书测试</el-button></el-menu-item>-->
-  <el-menu-item index="3" class="notice">
+  <el-menu-item index="3" class="notice" @click="loadNotice">
     <el-dropdown :hide-on-click="false" trigger="click"  @command="handleCommand">
       <span class="el-dropdown-link" style="color:#fff;">
-        公告<i style="color:#fff;" class="el-icon-arrow-down el-icon--right"></i>
+        公告({{total}})
+        <i style="color:#fff;" class="el-icon-arrow-down el-icon--right"></i>
+        <el-badge :is-dot="total > 0" class="dot"></el-badge>
       </span>
       <el-dropdown-menu slot="dropdown">
       <el-dropdown-item :command="readAll" style="color:red; padding-left:0px;padding-right:0px;"><el-button type="primary" style="width:100%;">全读</el-button></el-dropdown-item>
       <el-dropdown-item disabled>
       <i class="el-icon-arrow-down el-icon--right"></i>单击读公告
       </el-dropdown-item>
-        <el-dropdown-item v-for="(it,value) in notices" :key="value" :command="it.message">{{it.message}}</el-dropdown-item>
+        <el-dropdown-item v-for="(it,index) in notices" :key="index" :command="it.id">{{it.message}}</el-dropdown-item>
         <!--<el-dropdown-item :command="test">黄金糕asdasdasdas</el-dropdown-item>
         <el-dropdown-item command="b">狮子头</el-dropdown-item>
         <el-dropdown-item command="c" >螺蛳粉</el-dropdown-item>
         <el-dropdown-item command="d">蚵仔煎</el-dropdown-item>-->
       </el-dropdown-menu>
-</el-dropdown>
+    </el-dropdown>
   </el-menu-item>
   <el-menu-item index="4" @click="toTuShiLin" v-if="this.showAdmin">管理员入口</el-menu-item>
   <div class="loginsign">
@@ -78,7 +81,7 @@ export default {
         notices:[],
         pageSize:10,
         currentSize:1,
-        total:-1,
+        total:0,
         test:'a',
         readAll:true,
         showAdmin:false,
@@ -116,11 +119,31 @@ export default {
         user.status = sessionStorage.getItem("status")
       },
       loadNotice(){
-        this.$http.get(this.MYLINK.link2+'/admin/notice/select/'+10+'/'+1)
+        if(sessionStorage.getItem('id') == null){
+          return
+        }
+        // this.$http.get(this.MYLINK.link2+'/admin/notice/select/'+10+'/'+1)
+        this.$http.get(this.MYLINK.link2+'/admin/message/getUnReadMsgByUserId/'+sessionStorage.getItem('id'))
         .then(res=>{
+          if(res!=null){
             console.log(res)
-            this.notices = res.data.data.list
-            this.total = res.data.data.total
+            if(res.data.data!=null){
+              this.total = res.data.data.length
+              if(res.data.data.length >10){
+                this.notices = res.data.data.slice(0,10)
+              }else{
+                this.notices = res.data.data
+              }
+            }else{
+              this.total = 0
+            }
+          }else{
+            this.fail("访问公告失败")
+            this.total = 0
+          }
+        }).catch(e=>{
+          this.fail("访问失败")
+          console.log(e)
         })
       },
       success(msg) {
@@ -151,6 +174,8 @@ export default {
           sessionStorage.removeItem("username")
           sessionStorage.removeItem("token")
           sessionStorage.removeItem("status")
+          this.notices = []
+          this.total = 0
           this.id = -1
           this.username = ''
           this.onlogin = false
@@ -208,6 +233,7 @@ export default {
           this.managerGreeting = '尊敬的管理员'
           this.showAdmin = true
         }
+        this.loadNotice()
       },
       handleSelect(key, keyPath) {
         console.log(key, keyPath);
@@ -218,22 +244,53 @@ export default {
       handleClose(key, keyPath) {
         console.log(key, keyPath);
       },
-      handleCommand(command){           //公告点击
+      handleCommand(command){ 
+        console.log(command)          //公告点击   
+        if(command == null){
+          return
+        }
+        if(sessionStorage.getItem('id') == null){
+                return
+              }
         if(command == this.readAll){
             this.$confirm('是否全部已读？', '全读 ',{
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
             }).then(() => {
-            
+              for(let i = 0;i < this.notices.length;i++){
+                this.readOne(this.notices[i].id)
+              }
+              this.loadNotice()
             this.$message({
               type: 'success',
               message: '已全读'
             });
+            this.total = 0
           }).catch(() => {       
             });
+        }else{
+          // this.$http.get(this.MYLINK.link2+'/admin/message/getUnReadMsgByUserId/'+sessionStorage.getItem('id'))
+          this.readOne(command)
+          this.loadNotice()
         }
-        alert(command)
+        
+      },
+      readOne(nid){
+        this.$http.post(this.MYLINK.link2+
+          '/admin/message/setRead/'+sessionStorage.getItem('id')+'/'+nid)
+          .then(res=>{
+          if(res!=null){
+              this.success("已读")
+              this.loadNotice()
+            }else{
+              this.fail("失败")
+              this.total = 0
+            }
+          }).catch(e=>{
+            this.fail("访问失败")
+            console.log(e)
+          })
       }
     },
 }
@@ -258,6 +315,9 @@ export default {
   padding-left: 0px;
   padding-right: 0px;
 }*/
+.dot{
+  position: absolute;
+}
 body{
   min-width: 800px;
 }
@@ -335,4 +395,5 @@ body{
     border-radius: 20px;
     padding: 2px;
   }
+  
 </style>

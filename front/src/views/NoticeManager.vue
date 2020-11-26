@@ -64,7 +64,7 @@
         </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button @click="cancleEdit">取 消</el-button>
             <el-button type="primary" @click="editNotice">确 定</el-button>
         </div>
 </el-dialog>
@@ -80,7 +80,7 @@ export default {
     data(){
         return{
             dialogFormVisible: false,
-            total:100,
+            total:-1,
             currentPage:1,
             pageSizes:[5,10,20],
             pageSize:5,
@@ -92,7 +92,11 @@ export default {
                 message:''
             },
             selected:{
-
+                id:-1,
+                message:''
+            },
+            selectedCopy:{
+                message:''
             },
             notice:{
                 id:-1,
@@ -121,7 +125,11 @@ export default {
         handleEdit(index, row) {
         console.log(index, row);
         this.dialogFormVisible = true
-        this.selected = row
+        this.selected.id = row.id
+        this.selected.message = row.message
+      },
+      cancleEdit(){
+          this.dialogFormVisible = false
       },
       handleDelete(index, row) {
         console.log(index, row);
@@ -152,11 +160,11 @@ export default {
       },
       handleSizeChange(val){
           this.pageSize = val
-          this.loadTableData()
+          this.search()
       },
       handleCurrentChange(val){
           this.currentPage = val
-          this.loadTableData()
+          this.search()
       },
       publish(){
           if(this.textarea == ''){
@@ -187,7 +195,7 @@ export default {
               this.loadTableData()
               return
           }
-          this.$http.get(this.MYLINK.link+'/admin/message/selectByMessage/'
+          this.$http.get(this.MYLINK.link13001+'/message/selectByMessage/'
           +this.pageSize+'/'+this.currentPage+'/'+this.searchInput)
           .then(res=>{
               console.log(res)
@@ -205,6 +213,11 @@ export default {
           })
       },
       editNotice(){
+          if(this.selected.message == '' || this.selected.message == null){
+              this.fail('公告不能为空')
+              this.dialogFormVisible = false
+              return
+          }
           this.dialogFormVisible = false
           this.notice.id = this.selected.id
           this.notice.message = this.selected.message
@@ -214,11 +227,11 @@ export default {
               console.log(res)
               if(res !=null){
                   if(res.data.code==200){
-                      this.success('修改成功')
-                      this.loadTableData()
+                    this.success('修改成功')
+                    this.loadTableData()
                   }
               }else{
-                  this.fail('发布失败')
+                  this.fail('修改失败')
               }
           }).catch((e)=>{
               this.fail("无法访问")

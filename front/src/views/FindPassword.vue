@@ -3,27 +3,27 @@
 <el-container style="height:1000px;">
     <el-main>
       <h2 style="color:#fff;">找回密码</h2>
-      <div class="inframe">
+      <div class="inframe3">
         <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-          <el-form-item label="邮箱" prop="email">
+          <el-form-item class="in" label="邮箱" prop="email">
             <el-input @blur.prevent="check" v-model="form.email" placeholder="请输入邮箱" clearable></el-input>
           </el-form-item>
           <el-row>
             <el-col :span="20">
-                <el-form-item label="验证码" prop="checkCode">
+                <el-form-item  class="in" label="验证码" prop="checkCode">
                     <el-input :disabled="!changeable" v-model="form.code" placeholder="请输入验证码"></el-input>
                 </el-form-item>
             </el-col>
-            <el-col :span="4"><el-button plain style="position:absolute; right:0px;" v-text="this.buttonTip" 
-            @click="delay()" :disabled="!clickable"></el-button></el-col>
+            <el-col :span="4"><el-button plain style="position:absolute; right:13%;" v-text="this.buttonTip" 
+            @click="getCheckCode" :disabled="!clickable"></el-button></el-col>
           </el-row>
-            <el-form-item label="新密码" prop="password">
+            <el-form-item class="in" label="新密码" prop="password">
             <el-input :disabled="!changeable" v-model="form.password" placeholder="请输入新密码" show-password></el-input>
           </el-form-item>
-            <el-form-item label="确认密码" prop="confirm">
+            <el-form-item class="in" label="确认密码" prop="confirm">
                 <el-input :disabled="!changeable" v-model="confirm" placeholder="请再次确认新密码" show-password></el-input>
             </el-form-item>
-          <el-form-item style="text-align:right;">
+          <el-form-item class="in" style="text-align:right;">
             <el-button type="primary" style="width: 100%; align-self: flex-end;" @click="submit('form')">确认使用新密码</el-button>
           </el-form-item>
         </el-form>
@@ -42,7 +42,7 @@ export default {
     var checkPassword = (rule, value, callback) =>{
       var check = /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])/
       if(!check.test(value)){
-        callback(new Error('密码必须包含大小写和特殊字符，且不超过30个字符!'))
+        callback(new Error('必须包含大小写和特殊字符,且不超过30个字符'))
       }else{
         callback()
       }
@@ -82,7 +82,7 @@ export default {
         ],
         password:[
           {required:true, message:"请输入新密码!", trigger:"change"},
-          {min:8, max:30, message:"密码必须包含大小写和特殊字符，且不超过30个字符!", trigger:"change"},
+          {min:8, max:30, message:"必须包含大小写和特殊字符,且不超过30个字符", trigger:"change"},
           {validator: checkPassword, trigger: 'change' }
         ],
         confirm:[
@@ -107,6 +107,7 @@ export default {
     }
   },
   methods: {
+    // 邮箱检测
     check(){
       this.$http.get(this.MYLINK.link8001+'/user/getUser?email='+this.form.email)
       .then(res=>{
@@ -122,6 +123,7 @@ export default {
         console.log(e)
       })
     },
+    // 密码规则
     checkPassword(rule,value,callback){
       var check = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{3,30}/
       if(!check.test(value)){
@@ -130,15 +132,18 @@ export default {
         callback()
       }
     },
+    // 提示
     success(msg) {
         this.$message({
           message: msg,
           type: 'success'
         });
       },
+      // 失败
       fail(msg) {
         this.$message.error(msg);
       },
+      // 提交找回密码表单
     submit(formName) {
       let judge
       this.$refs[formName].validate((valid)=>{
@@ -176,6 +181,7 @@ export default {
          console.log(e)
        })
     },
+    // 得到验证码
     getCheckCode(){
       if(this.form.email == ''){
         this.fail("邮箱不能为空")
@@ -191,6 +197,7 @@ export default {
           clearInterval(this.interval);
           this.buttonTip = '还剩'+this.count+'秒'
           this.count--                                   //这样子感观上好点
+          /*这里设置了60秒计时，计时结束之后按钮恢复可点击状态*/
           this.interval = setInterval(() => {
               if(this.count>0){
                   this.buttonTip = '还剩'+this.count+'秒'
@@ -213,9 +220,6 @@ export default {
       }).catch((e)=>{
         console.log(e)
       })
-    },
-    delay(){
-      this.getCheckCode()
     }
   }
 }
@@ -229,9 +233,16 @@ export default {
   background-repeat: no-repeat;
   background-size: cover;
 }
-.inframe{
-  margin-left: 25%;
-  width: 50%;
+.in{
+  width: 87%;
+}
+.inframe3{
+  margin-left: 50%;
+  transform: translateX(-50%);
+  width: 30%;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding:30px 20px 5px 20px;
 }
 
     .el-header, .el-footer {

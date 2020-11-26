@@ -19,13 +19,9 @@
         </el-col>
         <el-col :span="2">
           <div style="padding-top:30px">
-            <el-button icon="el-icon-search" circle></el-button>
+            <el-button icon="el-icon-search" circle @click="toBooksList"></el-button>
           </div>
         </el-col>
-        <!--<el-col :span="6" style="padding-top:80px">
-          <el-button type="warning" icon="el-icon-shopping-cart-2" circle></el-button>
-          <el-button type="warning">我的订单</el-button>
-        </el-col>-->
     </el-row>
 
     <el-row>
@@ -45,48 +41,9 @@
             
         </el-col>
         <el-col :span="6" style="margin-left:100px;">
-            <img class="mainBook" src="../assets/images/摆渡人.jpg" alt="摆渡人">
+            <img class="mainBook" :src="this.book.cover" :alt="this.book.bookName">
         </el-col>
         <el-col :span="12">
-            <!-- <div class="sale_info">
-                <div class="book_info" style="border-top: silver 2px solid;">
-                <h3>摆渡人（系列畅销千万册。如果命运是一条孤独的河流，谁会是你灵魂的摆渡人？《摆渡人》完结篇即将上市！）</h3>
-                <p>（同名有声剧上线音频平台，由知名演员海铃、谢治勋领衔演绎，带你走进迪伦和崔斯坦的荒原世界！
-                《青春有你》王喆推荐！令千万读者灵魂震颤的人性救赎之作。如果我真的存在，也是因为你需要我。白马时光）</p>
-                </div>
-                <span class="introduce">作者:[中]
-                <a href="#">谷恒条野</a>
-                出品</span>
-                <span class="introduce">出版社:
-                <a href="#">五邑大学出版社</a>
-                </span>
-                <span class="introduce">
-                出版时间:2020/11/18
-                </span>
-                <p>
-                <span class="introduce">
-                在
-                <a href="#">谷恒条野书本榜</a>
-                排名第一位
-                </span>
-                <span class="introduce">
-                书本剩余数量：
-                <span pp_name="count">
-                10086
-                </span>
-                </span>
-                <span class="introduce">
-                书本价格:
-                <span class="introduce" pp_name="price">
-                24.7w
-                </span>
-                </span>
-                </p>
-                <p>
-                <el-button type="primary" round>借它就完事了！！</el-button>
-                <el-button type="danger" round disabled>很遗憾，本书已经被借完</el-button>
-                </p>
-            </div> -->
             <div class="sale_info">
                 <div class="book_info" style="border-top: silver 2px solid;">
                 <h3>{{this.book.bookName}}</h3>
@@ -105,9 +62,9 @@
                 <span class="introduce">
                 日点击量:{{this.book.dayClickCount}}
                 </span>
-                <span class="introduce">
+                <!--<span class="introduce">
                 月点击量:{{this.book.mouthClickCount}}
-                </span>
+                </span>-->
                 <span class="introduce">
                 书本剩余数量：
                 <span pp_name="count">
@@ -167,15 +124,18 @@
       searchResult:[]
     }),
     methods:{
+      // 提示
       success(msg) {
         this.$message({
           message: msg,
           type: 'success'
         });
       },
+      // 提示
       fail(msg) {
         this.$message.error(msg);
       },
+      // 加载书籍详情
       loadBookData(){
         this.$http.get(this.MYLINK.link9001+'/book/get/'+this.id)
         .then(res=>{
@@ -196,6 +156,7 @@
           this.fail('访问异常')
         })
       },
+      // 前往书籍列表
       toBooksList(){
         this.$router.push({path:'/bookslist',query:{state:this.state}})
       },
@@ -208,6 +169,7 @@
       handleClose(key, keyPath) {
         console.log(key, keyPath);
       },
+      // 书籍搜索
       dynamicSearch(){
         this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
@@ -220,27 +182,10 @@
           }
         })
       },
+      // 异步搜索
       querySearchAsync(queryString, cb){
-        // this.dynamicSearch()
         cb(this.searchResult)
-        // var restaurants = this.searchResult;
-        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        // cb(results);       
-        // clearTimeout(this.timeout);
-        // this.timeout = setTimeout(() => {
-        //   this.dynamicSearch()
-        //   cb(results);
-        // }, 1000 * Math.random());
       },
-      // createStateFilter(queryString) {
-      //   return (state) => {
-      //     console.log(state)
-      //      return ((state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) //列表内的模糊查询,indexOf找不到匹配会返回-1
-      //       || (state.author.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
-      //       || (state.cardId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
-      //       || (state.searchId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1));
-      //   };
-      // }
     }
   }
 </script>

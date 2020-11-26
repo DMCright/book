@@ -1,20 +1,5 @@
 <template>
     <div>
- <!--   <el-dialog
-  title="书籍详情"
-  :visible.sync="dialogVisible"
-  width="30%"
-  :before-close="handleClose">
-  <span>{{dialogMsg.book.bookName}}</span>
-  <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-  </span>
-</el-dialog>-->
-<!--<el-row>
-  <el-col :span="22"><el-input v-model="input" @keydown.enter.native="search" placeholder="请输入关键字"></el-input></el-col>
-  <el-col :span="2"><el-button icon="el-icon-search" @click="search" circle></el-button></el-col>
-</el-row>-->
         <el-table
             :data="tableData"
             style="width: 100%"
@@ -98,6 +83,7 @@
       this.loadUserDataBySession()
     },
     methods: {
+      // 借阅历史查询
       search(){
         if(this.input == '' || this.input==null || this.input==undefined){
           this.loadTableData()                                                 //输入的关键字为空默认查看所有数据
@@ -105,12 +91,14 @@
           console.log(this.input)
         }
       },
+      // 历史选中
       handleClick(row){
         console.log("选中"+row)
         this.selectedRow = row
         this.dialogVisible = true
         this.dialogMsg = this.tableData[row]
       },
+      // 通过session加载用户数据
       loadUserDataBySession(){
       this.$http.get(this.MYLINK.link8001+"/user/get/"+sessionStorage.getItem('id'))
       .then(res=>{
@@ -130,6 +118,7 @@
         this.fail("无法访问")
       })
     },
+      // 加载表格数据
       loadTableData(){
         this.$http.get(this.MYLINK.link12001+'/userBook/getByUid'+
       '/'+this.pageSize+'/'+this.currentPage+'/'+sessionStorage.getItem("id"))
@@ -140,6 +129,7 @@
         console.log(res)
         this.total = res.data.data.total
         this.tableData = res.data.data.list
+        this.tableData.reverse()
         for(let i = 0;i < this.tableData.length;i++){
           if(this.tableData[i].status ==1){
             this.tableData[i].statusString = "已返还"
@@ -149,6 +139,7 @@
         }
       })
       },
+      // 表格大小改变
       handleSizeChange(val) {
         this.pageSize = val
         this.loadTableData()
@@ -167,7 +158,7 @@
     data() {
       return {
         input:'',
-        dialogMsg:[],
+        dialogMsg:[], 
         selectedRow:-1,
         dialogVisible:false,
         currentPage:1,

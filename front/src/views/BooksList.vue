@@ -22,10 +22,6 @@
             <el-button icon="el-icon-search" circle @click="search"></el-button>
           </div>
         </el-col>
-        <!--<el-col :span="6" style="padding-left:30px;padding-top:80px;">
-          <el-button type="warning" icon="el-icon-shopping-cart-2" circle></el-button>
-          <el-button type="warning">我的订单</el-button>
-        </el-col>-->
     </el-row>
 
     <el-row>
@@ -34,66 +30,29 @@
         </el-col>
         <el-col :span="20" style="margin-left:10%;">
             <div class="choosen">
-
             <font style="color:white">书籍分类筛选:</font>
-
-            <el-select v-model="value" placeholder="请选择出版社" style="padding-left:30px">
-                <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                </el-option>
-            </el-select>
-
-            <el-select v-model="value2" placeholder="请选择作者" style="padding-left:30px">
-                <el-option
-                    v-for="item in authors"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                </el-option>
-            </el-select>
-
-            <el-select v-model="value3" multiple placeholder="请选择类别" style="padding-left:30px;padding-right:30px;">
+            <el-select v-model="selectedCategory" filterable placeholder="请选择类别" style="padding-left:30px;padding-right:30px;">
                 <el-option
                     v-for="item in category"
                     :key="item.value"
-                    :label="item.label"
+                    :label="item.categoryName"
                     :value="item.value">
                 </el-option>
             </el-select>
 
-            <el-button type="primary" round>筛选！</el-button>
+            <el-button type="primary" round @click="loadDataByCategory(selectedCategory)">筛选</el-button>
 
             </div>
             <p style="padding-top:20px">
-                <ul>
-                    <!-- <li class="list">
-                        <a href="#">
-                            <img class="books" src="../assets/images/摆渡人.jpg" alt="摆渡人">
-                        </a>
-                            <a class="infos" href="#" style="margin-left:21px">摆渡人（系列畅销千万册。如果命运是一条孤独的河流，谁会是你灵魂的摆渡人？《摆渡人》完结篇即将上市！）</a>
-                            <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:130px;">（同名有声剧上线音频平台，由知名演员海铃、谢治勋领衔演绎，带你走进迪伦和崔斯坦的荒原世界！
-                                《青春有你》王喆推荐！令千万读者灵魂震颤的人性救赎之作。如果我真的存在，也是因为你需要我。白马时光）</p>
-                            <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:80px;"><a href="#">谷恒条野</a><span>/</span><span>2020/11/18</span><span><a href="#">谷恒条野出版社</a></span></p>
-                    </li>-->
-                    <!--<li class="list">
-                        <a href="#">
-                            <img class="books" src="../assets/images/摆渡人.jpg" alt="摆渡人">
-                        </a>
-                            <a class="infos" href="#" style="margin-left:21px">摆渡人（系列畅销千万册。如果命运是一条孤独的河流，谁会是你灵魂的摆渡人？《摆渡人》完结篇即将上市！）</a>
-                            <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:130px;">谷恒条野特别推荐</p>
-                            <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:80px;"><a href="#">谷恒条野</a><span>/</span><span>2020/11/18</span><span><a href="#">谷恒条野出版社</a></span></p>
-
-                    </li> -->
-                    <li v-for="(it,index) in this.searchResultCopy" :key="index">
+                <ul>          
+                    <li class="list" v-for="(it,index) in this.searchResultCopy" :key="index">
+                    
                       <a :href="'/booksInformation?bookName='+it.bookName+'&id='+it.id">
-                            <img class="books" src="../assets/images/摆渡人.jpg" :alt="it.bookName">
+                            <img class="books" :src="it.cover" :alt="it.bookName">
                         </a>
-                            <a class="infos" :href="'/booksInformation?bookName='+it.bookName+'&id='+it.id"  style="margin-left:21px">{{it.bookName}}({{it.bookDesc}})</a>
+                            <a class="infos" :href="'/booksInformation?bookName='+it.bookName+'&id='+it.id"  style="margin-left:21px">《{{it.bookName}}》({{it.bookDesc}})</a>
                             <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:130px;">书架:{{it.bookShelf}}  层:{{it.bookFloor}}</p>
-                            <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:80px;"><a href="#">{{it.author}}</a><span>/</span><span>{{it.pressDate}}</span><span><a href="#">{{it.press}}</a></span></p>
+                            <p class="infos" style="margin-left:210px;width:800px;height:20px;bottom:80px;"><a href="#">作者：{{it.author}}</a><span>---出版时间：{{it.pressDate}}---</span><span><a href="#">出版社：{{it.press}}</a></span></p>
                     </li>
                 </ul>
             </p>
@@ -110,12 +69,18 @@
   export default {
     created(){
       this.state = this.$route.query.state
+      this.loadCategory()
     },
     mounted(){
-      this.loadData()
+      if(this.$route.query.categoryId !=null){
+        this.loadDataByCategory(this.$route.query.categoryId)
+      }else{
+        this.loadData()
+      }
     },
     data() {
       return {
+        selectedCategory:'',
         state:'',
         timeout:  null,
         searchResultCopy:[],
@@ -169,11 +134,25 @@
         }, {
           value: '选项5',
           label: '艺术'
-        }],
-        value3:''
+        }]
       }
     },
     methods:{
+      loadCategory(){
+        this.$http.get(this.MYLINK.link2+"/admin/category/select/"
+        + 100 + "/" + 1)
+        .then(res=>{
+          if(res != null){
+            console.log(res)
+            this.category = res.data.data.list
+            for(let i = 0;i < this.category.length;i++){
+              this.category[i].value = this.category[i].id
+            }
+          }else{
+            this.fail("访问失败")
+          }
+        })
+      },
       success(msg) {
         this.$message({
           message: msg,
@@ -183,6 +162,25 @@
       fail(msg) {
         this.$message.error(msg);
       },
+      loadDataByCategory(id){
+        this.$http.get(this.MYLINK.link15001+'/admin/categoryBookList/'+id
+        +'/'+100+'/'+1)//pageSize为10，查找1页即可
+        .then(res=>{
+          if(res != null){
+            if(res.data.data!=null){
+              this.searchResultCopy = res.data.data.list
+            }else{
+              this.fail("没有该类别的书籍")
+            }
+          }else{
+            this.fail("访问失败")
+          }
+        }).catch((e)=>{
+          console.log(e)
+          this.fail("无法访问")
+        })
+      },
+      // 加载符合条件的书籍
       loadData(){
         this.$http.get(this.MYLINK.link9001+'/book/selectByCondition/10/1?keyword='+this.state)//pageSize为10，查找1页即可
         .then(res=>{
@@ -219,30 +217,17 @@
           }
         })
       },
+      // 按照条件搜索书籍
       search(){
         clearTimeout(this.timeout)
         this.dynamicSearch()
         this.searchResultCopy = this.searchResult
       },
+      // 异步搜索
       querySearchAsync(queryString, cb){
         cb(this.searchResult)
-        // var restaurants = this.searchResult;
-        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-        // cb(results);
-        // clearTimeout(this.timeout);
-        // this.timeout = setTimeout(() => {
-        //   this.dynamicSearch()
-        //   cb(results);
-        // }, 1000 * Math.random());
       },
-      // createStateFilter(queryString) {
-      //   return (state) => {
-      //     return ((state.value.toLowerCase().indexOf(queryString.toLowerCase()) !== -1) //列表内的模糊查询,indexOf找不到匹配会返回-1
-      //       || (state.author.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
-      //       || (state.cardId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1)
-      //       || (state.searchId.toLowerCase().indexOf(queryString.toLowerCase()) !== -1));
-      //   };
-      // },
+      // 前往书籍详情
       toBooksInformation(name){
         this.$router.push({path:'/booksInformation',query:{boonName:name}})
       }
@@ -320,6 +305,9 @@ img{
   .books{
       width: 200px;
       height: 200px;
+      background-size:cover;
+      background-position: center;
+      background-repeat: no-repeat;
   }
   ul{
       list-style: none;

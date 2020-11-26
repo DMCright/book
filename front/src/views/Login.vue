@@ -1,21 +1,18 @@
 <template >
 <div id="frame" style="">
 <el-container style="height:600px;">
-  <!--<el-aside style="width:400px;">
-      <div id="left_back" alt="py"></div>
-  </el-aside>-->
   <el-container>
     <el-main>
       <h2 style="color:#fff;">登录</h2>
-      <div class="inframe">
-        <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-          <el-form-item label="用户名" prop="username">
+      <div class="inframe1">
+        <el-form class="inForm" ref="form" :model="form" :rules="rules" label-width="80px" >
+          <el-form-item class="in" label="用户名" prop="username">
             <el-input @keyup.enter.native="submit('form')" v-model="form.username" placeholder="请输入用户名" clearable></el-input>
           </el-form-item>
-          <el-form-item label="密码" prop="password">
+          <el-form-item class="in" label="密码" prop="password">
             <el-input @keyup.enter.native="submit('form')" v-model="form.password" placeholder="请输入密码" show-password clearable></el-input>
           </el-form-item>
-          <el-form-item style="text-align:right;">
+          <el-form-item class="in" style="text-align:right;">
             <el-button type="primary" style="width: 100%; align-self: flex-end;" @click="submit('form')">登录</el-button>
             <el-link type="primary" style="left:0px;" @click="toFindPassword">忘记密码?</el-link>
           </el-form-item>
@@ -23,7 +20,7 @@
       </div>
     </el-main>
     <el-footer>
-      <span>v 1.0</span>
+      
     </el-footer>
   </el-container>
 </el-container>
@@ -33,6 +30,7 @@
 
 export default {
   data() {
+    // 密码规则
     var checkPassword = (rule, value, callback) =>{
       var check = /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])/
       if(!check.test(value)){
@@ -42,6 +40,7 @@ export default {
       }
     }
     return {
+      // 校验规则汇总
       rules:{
         username:[
           {required:true, message:"请输入用户名", trigger:"change"},
@@ -49,7 +48,7 @@ export default {
         ],
         password:[
           {required:true, message:"请输入密码", trigger:"change"},
-          {min:8, max:30, message:"密码必须包含大小写和特殊字符，在8到30个字符以内", trigger:"change"},
+          {min:8, max:30, message:"必须包含大小写和特殊字符,在8到30个字符以内", trigger:"change"},
           {validator: checkPassword, trigger: 'change' }
         ]
       },
@@ -60,20 +59,8 @@ export default {
       },
     }
   },
-  mounted(){
-    // console.log(this.$route.params.username)
-    //   this.form.username = this.$route.params.username
-    //   this.form.password = this.$route.params.password
-  },
   methods: {
-    checkPassword(rule,value,callback){
-      var check = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{3,30}/
-      if(!check.test(value)){
-        callback(new Error('必须包含大小写和特殊字符，且不超过30个字符'))
-      }else{
-        callback()
-      }
-    },
+    // 提示
     success(msg) {
         this.$message({
           message: msg,
@@ -83,6 +70,7 @@ export default {
       fail(msg) {
         this.$message.error(msg);
       },
+      //提交登录信息表单
     submit(formName) {
       let judge
       this.$refs[formName].validate((valid)=>{
@@ -94,7 +82,7 @@ export default {
           judge = true
         }
       })
-      console.log(judge)
+      console.log(judge)//根据校验规则判断是否输入有错,有错则终止提交
       if(!judge){
         return
       }
@@ -124,6 +112,7 @@ export default {
          console.log(e)
        })
     },
+    // 前往找回密码页面
     toFindPassword() {
       this.$router.push({path:'/findPassword'})
     }
@@ -135,6 +124,11 @@ export default {
 body{
   min-width: 1000px;
 }
+.inForm{
+}
+.in{
+  width: 87%;
+}
 #left_back{
   width: 100%;
   height: 100%;
@@ -142,12 +136,13 @@ body{
   background-repeat: no-repeat;
   background-size: cover;
 }
-.inframe{
-  margin-left: 25%;
-  width: 50%;
+.inframe1{
+  margin-left: 50%;
+  transform: translateX(-50%);
+  width: 30%;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 20px;
-  padding:30px 20px 20px 0px;
+  padding:30px 20px 5px 20px;
 }
 
   .el-header, .el-footer {

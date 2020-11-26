@@ -20,6 +20,7 @@
 <script>
 export default {
     data() {
+      // 自定义密码规则
       var checkPassword = (rule, value, callback) =>{
       var check = /(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])/
       if(!check.test(value)){
@@ -28,6 +29,7 @@ export default {
         callback()
       }
     }
+    // 自定义确认密码规则
     var checkPasswordConfirm = (rule, value, callback) =>{
       if(this.form.password !=this.form.passwordConfirm){
         callback(new Error('两次输入的密码不一样!'))
@@ -35,6 +37,7 @@ export default {
         callback()
       }
     }
+    // 自定义号码规则
     var checkTelephone = (rule, value, callback) =>{
       var check = /^[0-9]*$/
       if(!check.test(value)){
@@ -43,6 +46,7 @@ export default {
         callback()
       }
     }
+    // 邮箱规则
     var checkEmail = (rule, value, callback) =>{
       var check = /^[a-z|A-Z|0-9|_]+@[a-z|A-Z|0-9|_]+\.[a-z|A-Z|0-9|_]+$/
       if(!check.test(value)){
@@ -67,6 +71,7 @@ export default {
         telephone: '',
         email: ''
       },
+      // 校验规则汇总
       rules:{
         username:[
           {required:true, message:"请输入用户名!", trigger:"change"},
@@ -98,6 +103,7 @@ export default {
     this.loadUserDataBySession()
   },
   methods: {
+    // 用于数据恢复
     copyUser(){
       this.copy.username = this.form.username
       this.copy.telephone = this.form.telephone
@@ -105,6 +111,7 @@ export default {
       this.copy.email = this.form.email
       this.copy.head_image = this.form.head_image
     },
+    // 通过session加载用户数据
     loadUserDataBySession(){
       this.$http.get(this.MYLINK.link8001+"/user/get/"+sessionStorage.getItem('id'))
       .then(res=>{
@@ -128,30 +135,25 @@ export default {
         this.fail("无法访问")
       })
     },
+    // 恢复数据
     recover(){
       this.form.username = this.copy.username
       this.form.telephone = this.copy.telephone
       this.form.email = this.copy.email
       this.form.head_image = this.copy.head_image
     },
-    // loadData(){
-    //   if(this.$route.query != null){
-    //       this.form.id = this.$route.query.id
-    //       this.form.head_image = this.$route.query.head_image
-    //       this.form.username = this.$route.query.username
-    //       this.form.telephone = this.$route.query.telephone
-    //       this.form.email = this.$route.query.email
-    //     }
-    //   },
+    // 成功提示
       success(msg) {
         this.$message({
           message: msg,
           type: 'success'
         });
       },
+      // 失败提示
       fail(msg) {
         this.$message.error(msg);
       },
+      // 改变可编辑状态
     change(){
       this.editable = !this.editable
       if(this.editable){
@@ -161,6 +163,7 @@ export default {
         this.editTip="编辑"
       }
     },
+    // 提交修改后用户数据表单
     submit(formName) {
       if(this.form.username==this.copy.username && 
       this.form.email==this.copy.email &&
@@ -204,22 +207,6 @@ export default {
         }).catch((e) => {  
           console.log(e)     
           });
-
-      //  let temp = this.$qs.stringify(this.form);
-      //  console.log(temp)
-      //  this.$http.put(this.MYLINK.link+'/user/update',temp)
-      //  .then(res=>{
-      //     console.log(res.data)
-      //     if(res.data.data==null ||res.data.data ==undefined){
-      //       this.fail(res.data.message)
-      //       this.editable = false
-      //       this.loadData()
-      //     }
-      //     else{
-      //       this.success(res.data.message)
-      //       this.editable = false
-      //     }
-      //  })
     }
   }
 }
